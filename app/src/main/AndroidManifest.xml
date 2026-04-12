@@ -10,6 +10,27 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.HusnaOli" />
+        android:theme="@style/Theme.HusnaOli">
+
+        <activity
+            android:name=".login"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".DashboardActivity"
+            android:exported="false" />
+        <activity
+            android:name=".KelolaUserActivity"
+            android:exported="false" />
+        <activity
+            android:name=".TambahUserActivity"
+            android:exported="false" />
+
+    </application>
 
 </manifest>

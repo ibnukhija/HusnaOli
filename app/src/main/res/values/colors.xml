@@ -7,4 +7,20 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <color name="bg_dark">#121212</color>
+    <color name="orange_accent">#FF6D00</color>
+    <color name="navy_button">#111827</color>
+    <color name="grey_text">#6B7280</color>
+    <color name="footer_bg">#F3F4F6</color>
+    <color name="header_dark">#121212</color>
+    <color name="card_bg">#FFFFFF</color>
+    <color name="border_color">#E5E7EB</color>
+    <color name="red_logout">#DC2626</color>
+    <color name="green_accent">#10B981</color>
+
+    <color name="role_admin_bg">#E0E7FF</color>
+    <color name="role_admin_text">#4338CA</color>
+    <color name="role_kasir_bg">#DCFCE7</color>
+    <color name="role_kasir_text">#15803D</color>
 </resources>
