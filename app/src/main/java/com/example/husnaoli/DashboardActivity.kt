@@ -25,6 +25,7 @@ class DashboardActivity : AppCompatActivity() {
         setupSpinner()
         setupBottomNavigation()
 
+        // Tombol Logout
         binding.btnLogout.setOnClickListener {
             val intent = Intent(this, login::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -32,15 +33,19 @@ class DashboardActivity : AppCompatActivity() {
             finish()
         }
 
+        // Pindah ke halaman Kelola User
         binding.cardKelolaUser.setOnClickListener {
             val intent = Intent(this, KelolaUserActivity::class.java)
             startActivity(intent)
         }
 
+        // --- PERBAIKAN: Pindah ke halaman Kelola Barang ---
         binding.cardKelolaBarang.setOnClickListener {
-            Toast.makeText(this, "Membuka Kelola Barang", Toast.LENGTH_SHORT).show()
+            val intent = Intent(this, KelolaBarangActivity::class.java)
+            startActivity(intent)
         }
 
+        // Card Laporan (Masih menggunakan Toast karena belum ada halamannya)
         binding.cardLaporan.setOnClickListener {
             Toast.makeText(this, "Membuka Laporan", Toast.LENGTH_SHORT).show()
         }
@@ -55,10 +60,13 @@ class DashboardActivity : AppCompatActivity() {
                     startActivity(Intent(this, KelolaUserActivity::class.java))
                     true
                 }
+
+                // --- PERBAIKAN: Menu Bottom Navigation untuk Kelola Barang ---
                 R.id.nav_barang -> {
-                    Toast.makeText(this, "Kelola Barang segera hadir", Toast.LENGTH_SHORT).show()
+                    startActivity(Intent(this, KelolaBarangActivity::class.java))
                     true
                 }
+
                 R.id.nav_laporan -> {
                     Toast.makeText(this, "Laporan segera hadir", Toast.LENGTH_SHORT).show()
                     true
