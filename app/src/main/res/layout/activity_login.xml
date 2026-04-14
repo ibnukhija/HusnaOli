@@ -71,6 +71,7 @@
             android:id="@+id/subtitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
             android:text="Sparepart Management System"
             android:textColor="@color/grey_text"
             android:textSize="14sp"
@@ -78,7 +79,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/title_layout" />
 
-        <!-- Login Card -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -175,10 +175,7 @@
                         app:icon="@android:drawable/ic_media_play"
                         app:iconGravity="textEnd"
                         app:iconPadding="8dp" />
-
                 </LinearLayout>
-
-                <!-- Footer -->
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"

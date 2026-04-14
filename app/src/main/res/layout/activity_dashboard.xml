@@ -13,6 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/header_dark"
+        android:layout_marginTop="80dp"
         android:minHeight="64dp"
         app:contentInsetStart="0dp"
         app:layout_constraintTop_toTopOf="parent">
@@ -90,7 +91,6 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.appcompat.widget.Toolbar>
 
-    <!-- Content -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -104,7 +104,6 @@
             android:orientation="vertical"
             android:padding="12dp">
 
-            <!-- Info Cards -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -125,10 +124,32 @@
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
                         android:padding="8dp">
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="TOTAL JENIS" android:textColor="@color/grey_text" android:textSize="8sp" android:textStyle="bold" />
-                        <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp">
-                            <TextView android:id="@+id/tv_total_barang" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="1" android:textColor="@color/black" android:textSize="18sp" android:textStyle="bold" />
-                            <ImageView android:layout_width="20dp" android:layout_height="20dp" android:layout_alignParentEnd="true" android:alpha="0.3" android:src="@android:drawable/ic_menu_agenda" app:tint="#111827" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="TOTAL JENIS"
+                            android:textColor="@color/grey_text"
+                            android:textSize="8sp"
+                            android:textStyle="bold" />
+                        <RelativeLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp">
+                            <TextView
+                                android:id="@+id/tv_total_barang"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0"
+                                android:textColor="@color/black"
+                                android:textSize="18sp"
+                                android:textStyle="bold" />
+                            <ImageView
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:layout_alignParentEnd="true"
+                                android:alpha="0.3"
+                                android:src="@android:drawable/ic_menu_agenda"
+                                app:tint="#111827" />
                         </RelativeLayout>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
@@ -178,7 +199,6 @@
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
 
-            <!-- Main Menu (Cards) -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

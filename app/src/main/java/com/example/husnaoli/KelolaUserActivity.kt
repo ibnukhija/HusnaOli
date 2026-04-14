@@ -38,13 +38,38 @@ class KelolaUserActivity : AppCompatActivity() {
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
         }
-        
+
         setupRecyclerView()
         loadData()
 
         binding.btnTambahUser.setOnClickListener {
             val intent = Intent(this, TambahUserActivity::class.java)
             startActivity(intent)
+        }
+
+        binding.bottomNavigation.selectedItemId = R.id.nav_user
+        binding.bottomNavigation.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_dashboard -> {
+                    val intent = Intent(this, DashboardActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                    true
+                }
+
+                R.id.nav_user -> true
+                R.id.nav_barang -> {
+                    val intent = Intent(this, KelolaBarangActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                    true
+                }
+
+                R.id.nav_laporan -> {
+                    Toast.makeText(this, "Membuka Laporan", Toast.LENGTH_SHORT).show()
+                    true
+                }else -> false
+            }
         }
     }
 

@@ -127,7 +127,6 @@ class KelolaBarangActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-    // ================= ADAPTER =================
     class SparepartAdapter(
         private var listSparepart: List<Sparepart>,
         private val onDeleteClick: (Sparepart) -> Unit,
