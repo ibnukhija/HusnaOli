@@ -24,25 +24,26 @@ class login : AppCompatActivity() {
             if (username.isEmpty() || password.isEmpty()) {
                 Toast.makeText(this, "Harap isi username dan password!", Toast.LENGTH_SHORT).show()
             } else {
-                if (checkLogin(username, password)) {
+                val db = dbHelper.readableDatabase
+                val cursor = db.rawQuery("SELECT nama, role FROM user WHERE username = ? AND password = ?", arrayOf(username, password))
+                
+                if (cursor.moveToFirst()) {
+                    val nama = cursor.getString(0)
+                    val role = cursor.getString(1)
+                    cursor.close()
+
                     Toast.makeText(this, "Login Berhasil!", Toast.LENGTH_SHORT).show()
+                    
                     val intent = Intent(this, DashboardActivity::class.java)
+                    intent.putExtra("USER_NAMA", nama)
+                    intent.putExtra("USER_ROLE", role)
                     startActivity(intent)
                     finish()
                 } else {
+                    cursor.close()
                     Toast.makeText(this, "Username atau Password salah!", Toast.LENGTH_SHORT).show()
                 }
             }
         }
-    }
-
-    private fun checkLogin(user: String, pass: String): Boolean {
-        val db = dbHelper.readableDatabase
-        val query = "SELECT * FROM user WHERE username = ? AND password = ?"
-        val cursor = db.rawQuery(query, arrayOf(user, pass))
-        
-        val exists = cursor.count > 0
-        cursor.close()
-        return exists
     }
 }
