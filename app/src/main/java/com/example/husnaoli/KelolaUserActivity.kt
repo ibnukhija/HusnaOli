@@ -47,7 +47,6 @@ class KelolaUserActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        // Bottom Navigation
         binding.bottomNavigation.selectedItemId = R.id.nav_user
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {
@@ -76,7 +75,7 @@ class KelolaUserActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        loadData() //refresh data
+        loadData() // Refresh data saat kembali dari halaman tambah
     }
 
     private fun setupRecyclerView() {

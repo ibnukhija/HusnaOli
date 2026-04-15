@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="8dp"
+    android:gravity="center_vertical">
+
+    <TextView
+        android:id="@+id/tv_nama_cart"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="2"
+        android:text="Ban Tubles Honda Vario"
+        android:textColor="@color/black"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/tv_qty_cart"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.5"
+        android:text="x1"
+        android:gravity="center"
+        android:textColor="@color/black"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/tv_subtotal_cart"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Rp 230.000"
+        android:gravity="end"
+        android:textColor="@color/orange_accent"
+        android:textStyle="bold"
+        android:textSize="12sp" />
+
+    <ImageView
+        android:id="@+id/btn_remove_cart"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginStart="8dp"
+        android:src="@android:drawable/ic_menu_close_clear_cancel"
+        app:tint="#DC3545"
+        xmlns:app="http://schemas.android.com/apk/res-auto" />
+
+</LinearLayout>

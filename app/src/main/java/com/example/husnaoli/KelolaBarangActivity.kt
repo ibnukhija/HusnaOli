@@ -3,30 +3,28 @@ package com.example.husnaoli
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import android.widget.BaseAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.husnaoli.databinding.ActivityKelolaBarangBinding
 import com.example.husnaoli.databinding.ItemSparepartBinding
 
-// ================= DATA CLASS =================
 data class Sparepart(
     val id: Int,
     val namaItem: String,
-    val kategori: String, // Nanti kita join query untuk dapatkan nama kategori
+    val kategori: String,
     val hargaBeli: Int,
     val hargaJual: Int,
     val stok: Int
 )
 
-// ================= ACTIVITY =================
 class KelolaBarangActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityKelolaBarangBinding
     private lateinit var dbHelper: DBHusnaOli
-    private lateinit var adapter: SparepartAdapter
+    private lateinit var sparepartAdapter: SparepartAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,141 +33,82 @@ class KelolaBarangActivity : AppCompatActivity() {
 
         dbHelper = DBHusnaOli(this)
 
-        binding.btnBack.setOnClickListener {
-            finish()
-        }
+        // Setup ListView
+        sparepartAdapter = SparepartAdapter(mutableListOf(),
+            { s -> deleteBarang(s) },
+            { s -> editBarang(s) }
+        )
+        binding.lvSparepart.adapter = sparepartAdapter
 
-        binding.btnLogout.setOnClickListener {
-            val intent = Intent(this, login::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            startActivity(intent)
-        }
-
-        setupRecyclerView()
-        loadData()
+        binding.btnBack.setOnClickListener { finish() }
 
         binding.btnTambahBarang.setOnClickListener {
-            val intent = Intent(this, TambahBarangActivity::class.java)
-            startActivity(intent)
+            startActivity(Intent(this, TambahBarangActivity::class.java))
         }
 
-        binding.btnTambahStok.setOnClickListener {
-            val intent = Intent(this, InputStokBaruActivity::class.java)
-            startActivity(intent)
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
         loadData()
-    }
-
-    private fun setupRecyclerView() {
-        adapter = SparepartAdapter(mutableListOf(),
-            onDeleteClick = { sparepart -> deleteBarang(sparepart) },
-            onEditClick = { sparepart -> editBarang(sparepart) }
-        )
-
-        binding.rvSparepart.layoutManager = LinearLayoutManager(this)
-        binding.rvSparepart.adapter = adapter
     }
 
     private fun loadData() {
         val list = mutableListOf<Sparepart>()
         val db = dbHelper.readableDatabase
-
-        // Menggunakan JOIN agar kita bisa menampilkan 'nama_kategori', bukan sekadar angka 'kategori_id'
         val query = """
             SELECT i.item_id, i.nama_item, k.nama_kategori, i.harga_beli, i.harga_jual, i.stok 
             FROM items i
             LEFT JOIN kategori k ON i.kategori_id = k.kategori_id
         """
-
         val cursor = db.rawQuery(query, null)
-
         if (cursor.moveToFirst()) {
             do {
-                list.add(
-                    Sparepart(
-                        cursor.getInt(0), // item_id
-                        cursor.getString(1), // nama_item
-                        cursor.getString(2) ?: "Tanpa Kategori", // nama_kategori (bisa null jika belum diset)
-                        cursor.getInt(3), // harga_beli
-                        cursor.getInt(4), // harga_jual
-                        cursor.getInt(5)  // stok
-                    )
-                )
+                list.add(Sparepart(
+                    cursor.getInt(0), cursor.getString(1),
+                    cursor.getString(2) ?: "Tanpa Kategori",
+                    cursor.getInt(3), cursor.getInt(4), cursor.getInt(5)
+                ))
             } while (cursor.moveToNext())
         }
-
         cursor.close()
-        adapter.updateData(list)
+        sparepartAdapter.updateData(list)
     }
 
-    private fun deleteBarang(sparepart: Sparepart) {
+    private fun deleteBarang(s: Sparepart) {
         val db = dbHelper.writableDatabase
-        // Tabelnya bernama 'items', kolom ID bernama 'item_id'
-        val result = db.delete(
-            "items",
-            "item_id=?",
-            arrayOf(sparepart.id.toString())
-        )
-
-        if (result > 0) {
-            Toast.makeText(this, "Barang ${sparepart.namaItem} dihapus", Toast.LENGTH_SHORT).show()
-            loadData()
-        }
+        db.delete("items", "item_id=?", arrayOf(s.id.toString()))
+        loadData()
+        Toast.makeText(this, "${s.namaItem} dihapus", Toast.LENGTH_SHORT).show()
     }
 
-    private fun editBarang(sparepart: Sparepart) {
+    private fun editBarang(s: Sparepart) {
         val intent = Intent(this, EditBarangActivity::class.java)
-        intent.putExtra("id", sparepart.id)
+        intent.putExtra("id", s.id)
         startActivity(intent)
     }
 
-    class SparepartAdapter(
-        private var listSparepart: List<Sparepart>,
-        private val onDeleteClick: (Sparepart) -> Unit,
-        private val onEditClick: (Sparepart) -> Unit
-    ) : RecyclerView.Adapter<SparepartAdapter.ViewHolder>() {
+    // ADAPTER LISTVIEW
+    inner class SparepartAdapter(
+        private var list: MutableList<Sparepart>,
+        private val onDelete: (Sparepart) -> Unit,
+        private val onEdit: (Sparepart) -> Unit
+    ) : BaseAdapter() {
+        override fun getCount(): Int = list.size
+        override fun getItem(position: Int) = list[position]
+        override fun getItemId(position: Int) = list[position].id.toLong()
 
-        class ViewHolder(val binding: ItemSparepartBinding) :
-            RecyclerView.ViewHolder(binding.root)
+        override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
+            val b = ItemSparepartBinding.inflate(LayoutInflater.from(parent?.context), parent, false)
+            val s = list[position]
+            b.tvNamaItem.text = s.namaItem
+            b.tvStok.text = "Stok: ${s.stok}"
+            b.tvHargaJual.text = "Rp ${s.hargaJual}"
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-            val b = ItemSparepartBinding.inflate(
-                LayoutInflater.from(parent.context),
-                parent,
-                false
-            )
-            return ViewHolder(b)
+            b.btnHapus.setOnClickListener { onDelete(s) }
+            b.btnEdit.setOnClickListener { onEdit(s) }
+            return b.root
         }
-
-        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            val s = listSparepart[position]
-
-            holder.binding.apply {
-                tvNamaItem.text = s.namaItem
-                tvKategori.text = s.kategori
-                tvHargaBeli.text = "Rp ${s.hargaBeli}"
-                tvHargaJual.text = "Rp ${s.hargaJual}"
-                tvStok.text = s.stok.toString()
-
-                btnHapus.setOnClickListener {
-                    onDeleteClick(s)
-                }
-
-                btnEdit.setOnClickListener {
-                    onEditClick(s)
-                }
-            }
-        }
-
-        override fun getItemCount(): Int = listSparepart.size
 
         fun updateData(newList: List<Sparepart>) {
-            listSparepart = newList
-            // Menggunakan notifyDataSetChanged agar aman
+            list.clear()
+            list.addAll(newList)
             notifyDataSetChanged()
         }
     }

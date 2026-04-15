@@ -8,71 +8,65 @@
     android:background="#F9FAFB"
     tools:context=".KelolaBarangActivity">
 
-    <!-- ================= TOOLBAR ================= -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/header_dark"
-        android:layout_marginTop="80dp"
         android:minHeight="64dp"
         app:contentInsetStart="0dp"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"> <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="8dp">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
+        <ImageView
+            android:id="@+id/btn_back"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@android:drawable/ic_menu_revert"
+            app:tint="@color/white"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"/>
+
+        <TextView
+            android:id="@+id/tv_header_title"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="8dp"
+            android:text="HUSNA OLI KEDIRI"
+            android:textSize="16sp"
+            android:textColor="@color/white"
+            android:textStyle="italic"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:fontFamily="sans-serif-black"
+            app:layout_constraintStart_toEndOf="@id/btn_back"
+            app:layout_constraintEnd_toStartOf="@id/btn_logout"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_logout"
+            style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:text="LOGOUT"
+            android:textSize="10sp"
             android:paddingHorizontal="12dp"
-            android:paddingVertical="8dp">
-
-            <ImageView
-                android:id="@+id/btn_back"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@android:drawable/ic_menu_revert"
-                app:tint="@color/white"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"/>
-
-            <TextView
-                android:id="@+id/tv_header_title"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:layout_marginEnd="8dp"
-                android:text="HUSNA OLI KEDIRI"
-                android:textSize="16sp"
-                android:textColor="@color/white"
-                android:textStyle="italic"
-                android:maxLines="1"
-                android:ellipsize="end"
-                android:fontFamily="sans-serif-black"
-                app:layout_constraintStart_toEndOf="@id/btn_back"
-                app:layout_constraintEnd_toStartOf="@id/btn_logout"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"/>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_logout"
-                style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
-                android:layout_width="wrap_content"
-                android:layout_height="32dp"
-                android:text="LOGOUT"
-                android:textSize="10sp"
-                android:paddingHorizontal="12dp"
-                android:backgroundTint="@color/red_logout"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                app:cornerRadius="4dp"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"/>
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
+            android:backgroundTint="@color/red_logout"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            app:cornerRadius="4dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.appcompat.widget.Toolbar>
 
-    <!-- ================= CARD CONTENT ================= -->
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -90,20 +84,17 @@
             android:orientation="vertical"
             android:padding="12dp">
 
-            <!-- ===== HEADER LIST ===== -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp">
 
-                <!-- Title -->
                 <LinearLayout
                     android:id="@+id/title_layout"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:layout_marginEnd="8dp"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toStartOf="@id/action_buttons_layout"
                     app:layout_constraintTop_toTopOf="parent"
@@ -125,7 +116,6 @@
                         android:textColor="@color/black"/>
                 </LinearLayout>
 
-                <!-- Buttons -->
                 <LinearLayout
                     android:id="@+id/action_buttons_layout"
                     android:layout_width="wrap_content"
@@ -136,66 +126,29 @@
                     app:layout_constraintBottom_toBottomOf="parent">
 
                     <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_tambah_stok"
-                        android:layout_width="wrap_content"
-                        android:layout_height="36dp"
-                        android:layout_marginEnd="6dp"
-                        android:text="+ Tambah Stok"
-                        android:textSize="9sp"
-                        android:textAllCaps="false"
-                        android:backgroundTint="#28A745"
-                        android:insetTop="0dp"
-                        android:insetBottom="0dp"
-                        app:cornerRadius="6dp"/>
-
-                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_tambah_barang"
                         android:layout_width="wrap_content"
                         android:layout_height="36dp"
-                        android:text="+ Tambah Barang"
+                        android:text="+ Barang"
                         android:textSize="9sp"
-                        android:textAllCaps="false"
                         android:backgroundTint="#FD7E14"
                         android:insetTop="0dp"
                         android:insetBottom="0dp"
                         app:cornerRadius="6dp"/>
-
                 </LinearLayout>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <!-- ===== TABLE HEADER ===== -->
-            <LinearLayout
+            <ListView
+                android:id="@+id/lv_sparepart"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:background="@color/navy_button"
-                android:paddingHorizontal="4dp"
-                android:paddingVertical="10dp">
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="2.5"
-                    android:text="NAMA ITEM"
-                    android:textSize="8sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/white"/>
-
-            </LinearLayout>
-
-            <!-- ===== LIST ===== -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_sparepart"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                tools:listitem="@layout/item_sparepart"/>
+                android:layout_height="match_parent"
+                android:divider="#EEEEEE"
+                android:dividerHeight="1dp" />
 
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- ================= FOOTER ================= -->
     <TextView
         android:id="@+id/footer"
         android:layout_width="match_parent"

@@ -13,7 +13,7 @@ class EditBarangActivity : AppCompatActivity() {
     private lateinit var binding: ActivityEditBarangBinding
     private lateinit var dbHelper: DBHusnaOli
 
-    // Variabel untuk menyimpan ID barang yang sedang diedit
+    // Variabel untuk menyimpan ID barang yang sedang diedit (item_id di database)
     private var sparepartId: Int = -1
 
     // Daftar Kategori (Samakan dengan yang ada di TambahBarangActivity)
@@ -28,7 +28,6 @@ class EditBarangActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Pastikan nama binding sesuai dengan file XML Anda (activity_edit_barang.xml)
         binding = ActivityEditBarangBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -38,6 +37,7 @@ class EditBarangActivity : AppCompatActivity() {
         setupSpinners()
 
         // 2. Ambil ID dari Intent (Dikirim dari KelolaBarangActivity)
+        // Kuncinya harus sama dengan yang dikirim yaitu "id"
         sparepartId = intent.getIntExtra("id", -1)
 
         // 3. Load Data Lama jika ID valid
@@ -45,7 +45,7 @@ class EditBarangActivity : AppCompatActivity() {
             loadDataLama(sparepartId)
         } else {
             Toast.makeText(this, "Error: Data barang tidak ditemukan!", Toast.LENGTH_SHORT).show()
-            finish() // Tutup halaman jika ID tidak valid
+            finish()
         }
 
         // 4. Setup Tombol-tombol
@@ -53,7 +53,6 @@ class EditBarangActivity : AppCompatActivity() {
     }
 
     private fun setupSpinners() {
-        // --- Spinner Kategori ---
         val adapterKategori = ArrayAdapter(
             this,
             android.R.layout.simple_spinner_item,
@@ -62,8 +61,7 @@ class EditBarangActivity : AppCompatActivity() {
         adapterKategori.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spinnerKategori.adapter = adapterKategori
 
-        // --- Spinner Foto (Simulasi) ---
-        // Karena di UI Anda menggunakan dropdown untuk memilih foto, ini datanya
+        // Spinner Foto (Opsional untuk tampilan)
         val listFoto = arrayOf("Pilih Foto", "Oli Yamalube", "Oli MPX", "Kampas Rem Honda")
         val adapterFoto = ArrayAdapter(
             this,
@@ -75,17 +73,9 @@ class EditBarangActivity : AppCompatActivity() {
     }
 
     private fun setupListeners() {
-        // Tombol Kembali di Header
-        binding.btnBackHeader.setOnClickListener {
-            finish()
-        }
+        binding.btnBackHeader.setOnClickListener { finish() }
+        binding.btnBack.setOnClickListener { finish() }
 
-        // Tombol Kembali berupa teks
-        binding.btnBack.setOnClickListener {
-            finish()
-        }
-
-        // Tombol Logout
         binding.btnLogout.setOnClickListener {
             val intent = Intent(this, login::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -93,7 +83,6 @@ class EditBarangActivity : AppCompatActivity() {
             finish()
         }
 
-        // Tombol Update Data
         binding.btnUpdate.setOnClickListener {
             updateDataBarang()
         }
@@ -101,77 +90,67 @@ class EditBarangActivity : AppCompatActivity() {
 
     private fun loadDataLama(id: Int) {
         val db = dbHelper.readableDatabase
-        // Asumsi nama tabel adalah 'sparepart'
-        val cursor = db.rawQuery("SELECT * FROM sparepart WHERE id = ?", arrayOf(id.toString()))
+        // Perbaikan: Tabel 'items', Kolom 'item_id'
+        val cursor = db.rawQuery("SELECT * FROM items WHERE item_id = ?", arrayOf(id.toString()))
 
         if (cursor.moveToFirst()) {
             try {
-                // Set EditText
+                // Ambil data menggunakan nama kolom yang ada di DBHusnaOli
                 binding.etNamaItem.setText(cursor.getString(cursor.getColumnIndexOrThrow("nama_item")))
-                binding.etStokSaatIni.setText(cursor.getString(cursor.getColumnIndexOrThrow("stok")))
-                binding.etHargaBeli.setText(cursor.getString(cursor.getColumnIndexOrThrow("harga_beli")))
-                binding.etHargaJual.setText(cursor.getString(cursor.getColumnIndexOrThrow("harga_jual")))
+                binding.etStokSaatIni.setText(cursor.getInt(cursor.getColumnIndexOrThrow("stok")).toString())
+                binding.etHargaBeli.setText(cursor.getInt(cursor.getColumnIndexOrThrow("harga_beli")).toString())
+                binding.etHargaJual.setText(cursor.getInt(cursor.getColumnIndexOrThrow("harga_jual")).toString())
 
-                // Set Spinner Kategori ke posisi yang sesuai dengan data database
-                val kategoriDB = cursor.getString(cursor.getColumnIndexOrThrow("kategori"))
-                val kategoriPosition = listKategori.indexOf(kategoriDB)
-                if (kategoriPosition >= 0) {
-                    binding.spinnerKategori.setSelection(kategoriPosition)
-                }
-
-                // Catatan: Jika ada data foto di database, Anda bisa set Spinner Foto dan ImageView (Pratinjau) di sini
+                // Karena di DBHusnaOli kategori disimpan sebagai kategori_id (INTEGER),
+                // sementara kita set default selection dulu
+                binding.spinnerKategori.setSelection(0)
 
             } catch (e: Exception) {
-                Toast.makeText(this, "Gagal memuat data: Kolom tidak ditemukan", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Gagal memuat: Nama kolom tidak sesuai", Toast.LENGTH_SHORT).show()
             }
         } else {
-            Toast.makeText(this, "Data barang tidak ditemukan di database", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Data tidak ditemukan di database", Toast.LENGTH_SHORT).show()
         }
         cursor.close()
     }
 
     private fun updateDataBarang() {
-        // Ambil data terbaru dari input
         val namaItem = binding.etNamaItem.text.toString().trim()
-        val kategori = binding.spinnerKategori.selectedItem.toString()
         val stokStr = binding.etStokSaatIni.text.toString().trim()
         val hargaBeliStr = binding.etHargaBeli.text.toString().trim()
         val hargaJualStr = binding.etHargaJual.text.toString().trim()
 
-        // Validasi form tidak boleh kosong
         if (namaItem.isEmpty() || stokStr.isEmpty() || hargaBeliStr.isEmpty() || hargaJualStr.isEmpty()) {
             Toast.makeText(this, "Semua kolom form harus diisi!", Toast.LENGTH_SHORT).show()
             return
         }
 
-        // Konversi ke integer dengan aman
         val stok = stokStr.toIntOrNull() ?: 0
         val hargaBeli = hargaBeliStr.toIntOrNull() ?: 0
         val hargaJual = hargaJualStr.toIntOrNull() ?: 0
 
-        // Siapkan data untuk diupdate ke SQLite
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
             put("nama_item", namaItem)
-            put("kategori", kategori)
+            put("kategori_id", 1) // Sesuaikan relasi kategori (Oli)
             put("stok", stok)
             put("harga_beli", hargaBeli)
             put("harga_jual", hargaJual)
         }
 
-        // Jalankan perintah UPDATE
+        // Perbaikan: Update ke tabel 'items' berdasarkan 'item_id'
         val result = db.update(
-            "sparepart",
+            "items",
             values,
-            "id = ?",
+            "item_id = ?",
             arrayOf(sparepartId.toString())
         )
 
         if (result > 0) {
-            Toast.makeText(this, "Data sparepart berhasil diperbarui", Toast.LENGTH_SHORT).show()
-            finish() // Kembali ke halaman KelolaBarangActivity
+            Toast.makeText(this, "Data Husna Oli berhasil diperbarui", Toast.LENGTH_SHORT).show()
+            finish()
         } else {
-            Toast.makeText(this, "Gagal memperbarui data", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Gagal memperbarui data di tabel items", Toast.LENGTH_SHORT).show()
         }
     }
 }
