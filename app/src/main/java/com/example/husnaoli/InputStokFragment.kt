@@ -73,7 +73,8 @@ class InputStokFragment : Fragment() {
             val day = calendar.get(Calendar.DAY_OF_MONTH)
 
             val datePickerDialog = DatePickerDialog(requireContext(), { _, selectedYear, selectedMonth, selectedDay ->
-                val formattedDate = "$selectedYear-${selectedMonth + 1}-$selectedDay"
+                // %02d agar bulan 4 jadi 04, dan hari 1 jadi 01
+                val formattedDate = String.format("%04d-%02d-%02d", selectedYear, selectedMonth + 1, selectedDay)
                 binding.etTanggal.setText(formattedDate)
             }, year, month, day)
 

@@ -7,9 +7,15 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.example.husnaoli.databinding.FragmentLaporanBinding
 import java.util.*
+import android.content.Context
+import android.print.PrintAttributes
+import android.print.PrintManager
+import android.webkit.WebView
+import android.webkit.WebViewClient
 
 class LaporanFragment : Fragment() {
 
@@ -58,11 +64,26 @@ class LaporanFragment : Fragment() {
             val jenis = binding.spinnerJenis.selectedItemPosition
 
             if (start.isEmpty() || end.isEmpty()) {
-                Toast.makeText(requireContext(), "Pilih tanggal", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Harap pilih tanggal mulai dan akhir!", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
             val data = if (jenis == 0) dbHelper.getLaporanMasuk(start, end) else dbHelper.getLaporanKeluar(start, end)
+
+            // validasi data kosong
+            if (data.isEmpty()) {
+                binding.lvLaporan.adapter = null
+                binding.tvGrandTotal.text = "Rp 0"
+
+                // dialog peringatan
+                AlertDialog.Builder(requireContext())
+                    .setTitle("Peringatan")
+                    .setMessage("Belum ada data laporan pada periode tersebut.")
+                    .setPositiveButton("OK", null)
+                    .show()
+                return@setOnClickListener
+            }
+
             binding.lvLaporan.adapter = LaporanAdapter(data, jenis)
 
             val total = if (jenis == 0) {
@@ -72,10 +93,11 @@ class LaporanFragment : Fragment() {
             }
             binding.tvGrandTotal.text = "Rp ${String.format("%,.0f", total.toDouble())}"
         }
+
+        binding.btnCetak.setOnClickListener {
+            Toast.makeText(requireContext(), "Fitur cetak sedang dikembangkan (PDF)", Toast.LENGTH_SHORT).show()
+        }
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
+    override fun onDestroyView() { super.onDestroyView(); _binding = null }
 }

@@ -112,7 +112,7 @@ class DBHusnaOli(context: Context) :
         onCreate(db)
     }
 
-    // ================== LAPORAN ==================
+    // LAPORAN
     fun getLaporanMasuk(startDate: String, endDate: String): List<LaporanMasuk> {
         val list = mutableListOf<LaporanMasuk>()
         val db = readableDatabase
