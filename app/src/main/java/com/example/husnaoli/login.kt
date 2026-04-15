@@ -32,11 +32,15 @@ class login : AppCompatActivity() {
                     val role = cursor.getString(1)
                     cursor.close()
 
+                    val sharedPref = getSharedPreferences("UserSession", MODE_PRIVATE)
+                    val editor = sharedPref.edit()
+                    editor.putString("nama", nama)
+                    editor.putString("role", role)
+                    editor.apply()
+
                     Toast.makeText(this, "Login Berhasil!", Toast.LENGTH_SHORT).show()
-                    
+
                     val intent = Intent(this, DashboardActivity::class.java)
-                    intent.putExtra("USER_NAMA", nama)
-                    intent.putExtra("USER_ROLE", role)
                     startActivity(intent)
                     finish()
                 } else {

@@ -9,46 +9,47 @@ import com.example.husnaoli.databinding.ActivityDashboardBinding
 
 class DashboardActivity : AppCompatActivity() {
     private lateinit var binding: ActivityDashboardBinding
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityDashboardBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         // Mengambil data dari Intent
-        val namaUser = intent.getStringExtra("USER_NAMA") ?: "User"
-        val roleUser = intent.getStringExtra("USER_ROLE") ?: "Guest"
+        val sharedPref = getSharedPreferences("UserSession", MODE_PRIVATE)
+        val namaUser = sharedPref.getString("nama", "User")
+        val roleUser = sharedPref.getString("role", "Guest")
 
-        // Menampilkan ke TextView
+        // Menampilkan nama user dan role ke TextView
         binding.tvUserGreeting.text = "Halo, $namaUser ($roleUser)"
 
         setupSpinner()
         setupBottomNavigation()
 
         // Tombol Logout
-        binding.btnLogout.setOnClickListener {
+        binding.btnLogout.setOnClickListener {// Hapus Session
+            val sharedPref = getSharedPreferences("UserSession", MODE_PRIVATE)
+            sharedPref.edit().clear().apply()
             val intent = Intent(this, login::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
             finish()
         }
 
-        // Pindah ke halaman Kelola User
-        binding.cardKelolaUser.setOnClickListener {
-            val intent = Intent(this, KelolaUserActivity::class.java)
-            startActivity(intent)
-        }
-
-        // --- PERBAIKAN: Pindah ke halaman Kelola Barang ---
-        binding.cardKelolaBarang.setOnClickListener {
-            val intent = Intent(this, KelolaBarangActivity::class.java)
-            startActivity(intent)
-        }
-
-        // Card Laporan (Masih menggunakan Toast karena belum ada halamannya)
-        binding.cardLaporan.setOnClickListener {
-            Toast.makeText(this, "Membuka Laporan", Toast.LENGTH_SHORT).show()
-        }
+//        // Pindah ke halaman Kelola User
+//        binding.cardKelolaUser.setOnClickListener {
+//            val intent = Intent(this, KelolaUserActivity::class.java)
+//            startActivity(intent)
+//        }
+//
+//        binding.cardKelolaBarang.setOnClickListener {
+//            val intent = Intent(this, KelolaBarangActivity::class.java)
+//            startActivity(intent)
+//        }
+//
+//        // Card Laporan (Masih menggunakan Toast karena belum ada halamannya)
+//        binding.cardLaporan.setOnClickListener {
+//            Toast.makeText(this, "Membuka Laporan", Toast.LENGTH_SHORT).show()
+//        }
     }
 
     private fun setupBottomNavigation() {
@@ -57,13 +58,13 @@ class DashboardActivity : AppCompatActivity() {
             when (item.itemId) {
                 R.id.nav_dashboard -> true
                 R.id.nav_user -> {
-                    startActivity(Intent(this, KelolaUserActivity::class.java))
+                    val intent = Intent(this, KelolaUserActivity::class.java)
+                    startActivity(intent)
                     true
                 }
-
-                // --- PERBAIKAN: Menu Bottom Navigation untuk Kelola Barang ---
                 R.id.nav_barang -> {
-                    startActivity(Intent(this, KelolaBarangActivity::class.java))
+                    val intent = Intent(this, KelolaBarangActivity::class.java)
+                    startActivity(intent)
                     true
                 }
 

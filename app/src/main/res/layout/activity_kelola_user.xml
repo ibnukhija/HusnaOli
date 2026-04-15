@@ -202,18 +202,18 @@
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
-    <!-- Footer -->
-    <TextView
-        android:id="@+id/footer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/header_dark"
-        android:gravity="center"
-        android:padding="8dp"
-        android:text="© 2026 Husna Oli Kediri."
-        android:textColor="@color/grey_text"
-        android:textSize="9sp"
-        app:layout_constraintBottom_toTopOf="@id/bottom_navigation" />
+<!--    &lt;!&ndash; Footer &ndash;&gt;-->
+<!--    <TextView-->
+<!--        android:id="@+id/footer"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:background="@color/header_dark"-->
+<!--        android:gravity="center"-->
+<!--        android:padding="8dp"-->
+<!--        android:text="© 2026 Husna Oli Kediri."-->
+<!--        android:textColor="@color/grey_text"-->
+<!--        android:textSize="9sp"-->
+<!--        app:layout_constraintBottom_toTopOf="@id/bottom_navigation" />-->
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"
