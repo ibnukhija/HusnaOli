@@ -3,86 +3,52 @@ package com.example.husnaoli
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.husnaoli.databinding.ActivityKelolaUserBinding
+import com.example.husnaoli.databinding.FragmentUserBinding
 import com.example.husnaoli.databinding.ItemUserBinding
 
-data class User(
-    val id: Int,
-    val nama: String,
-    val username: String,
-    val role: String
-)
+class UserFragment : Fragment() {
 
-class KelolaUserActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityKelolaUserBinding
+    private var _binding: FragmentUserBinding? = null
+    private val binding get() = _binding!!
     private lateinit var dbHelper: DBHusnaOli
     private lateinit var adapter: UserAdapter
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        binding = ActivityKelolaUserBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentUserBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
-        dbHelper = DBHusnaOli(this)
-        
-        binding.btnBack.setOnClickListener { finish() }
-
-        binding.btnLogout.setOnClickListener {
-            val intent = Intent(this, login::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            startActivity(intent)
-        }
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        dbHelper = DBHusnaOli(requireContext())
 
         setupRecyclerView()
-        loadData()
-
+        
         binding.btnTambahUser.setOnClickListener {
-            val intent = Intent(this, TambahUserActivity::class.java)
-            startActivity(intent)
-        }
-
-        binding.bottomNavigation.selectedItemId = R.id.nav_user
-        binding.bottomNavigation.setOnItemSelectedListener { item ->
-            when (item.itemId) {
-                R.id.nav_dashboard -> {
-                    val intent = Intent(this, DashboardActivity::class.java)
-                    startActivity(intent)
-                    finish()
-                    true
-                }
-
-                R.id.nav_user -> true
-                R.id.nav_barang -> {
-                    val intent = Intent(this, KelolaBarangActivity::class.java)
-                    startActivity(intent)
-                    finish()
-                    true
-                }
-
-                R.id.nav_laporan -> {
-                    Toast.makeText(this, "Membuka Laporan", Toast.LENGTH_SHORT).show()
-                    true
-                }else -> false
-            }
+            startActivity(Intent(requireContext(), TambahUserActivity::class.java))
         }
     }
 
     override fun onResume() {
         super.onResume()
-        loadData() // Refresh data saat kembali dari halaman tambah
+        loadData()
     }
 
     private fun setupRecyclerView() {
-        adapter = UserAdapter(mutableListOf()) { user ->
+        adapter = UserAdapter(mutableListOf<User>()) { user ->
             deleteUser(user)
         }
-        binding.rvUser.layoutManager = LinearLayoutManager(this)
+        binding.rvUser.layoutManager = LinearLayoutManager(requireContext())
         binding.rvUser.adapter = adapter
     }
 
@@ -109,10 +75,17 @@ class KelolaUserActivity : AppCompatActivity() {
         val db = dbHelper.writableDatabase
         val result = db.delete("user", "user_id=?", arrayOf(user.id.toString()))
         if (result > 0) {
-            Toast.makeText(this, "User ${user.nama} berhasil dihapus", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "User ${user.nama} berhasil dihapus", Toast.LENGTH_SHORT).show()
             loadData()
         }
     }
+
+    data class User(
+        val id: Int,
+        val nama: String,
+        val username: String,
+        val role: String
+    )
 
     class UserAdapter(
         private var listUser: List<User>,
@@ -151,5 +124,10 @@ class KelolaUserActivity : AppCompatActivity() {
             listUser = newList
             notifyDataSetChanged()
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }
