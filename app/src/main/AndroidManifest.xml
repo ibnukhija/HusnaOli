@@ -12,6 +12,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.HusnaOli">
         <activity
+            android:name=".LaporanFragment"
+            android:exported="false" />
+        <activity
             android:name=".LaporanAdapter"
             android:exported="false" />
         <activity

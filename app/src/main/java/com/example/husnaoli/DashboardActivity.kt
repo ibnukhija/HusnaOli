@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 import com.example.husnaoli.databinding.ActivityDashboardBinding
 
 class DashboardActivity : AppCompatActivity() {
@@ -15,20 +16,23 @@ class DashboardActivity : AppCompatActivity() {
         binding = ActivityDashboardBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Mengambil data user dari SharedPreferences (sesuai versi teman kamu)
+        // Ambil data user
         val sharedPref = getSharedPreferences("UserSession", MODE_PRIVATE)
         val namaUser = sharedPref.getString("USER_NAMA", "User")
         val roleUser = sharedPref.getString("USER_ROLE", "Guest")
-
         binding.tvUserGreeting.text = "Halo, $namaUser ($roleUser)"
 
-        setupSpinner()
+        // Load default fragment
+        if (savedInstanceState == null) {
+            replaceFragment(DashboardFragment())
+        }
+
         setupBottomNavigation()
 
         // Tombol Logout
         binding.btnLogout.setOnClickListener {
-            val sharedPref = getSharedPreferences("UserSession", MODE_PRIVATE)
-            sharedPref.edit().clear().apply()
+            val sharedPrefEdit = getSharedPreferences("UserSession", MODE_PRIVATE).edit()
+            sharedPrefEdit.clear().apply()
 
             val intent = Intent(this, login::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -46,27 +50,29 @@ class DashboardActivity : AppCompatActivity() {
             startActivity(Intent(this, KelolaBarangActivity::class.java))
         }
 
-        // Card Laporan
+        // Card Laporan → pakai Fragment
         binding.cardLaporan.setOnClickListener {
-            startActivity(Intent(this, LaporanActivity::class.java))
+            replaceFragment(LaporanFragment())
         }
     }
 
     private fun setupBottomNavigation() {
-        binding.bottomNavigation.selectedItemId = R.id.nav_dashboard
         binding.bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.nav_dashboard -> true
+                R.id.nav_dashboard -> {
+                    replaceFragment(DashboardFragment())
+                    true
+                }
                 R.id.nav_user -> {
-                    startActivity(Intent(this, KelolaUserActivity::class.java))
+                    replaceFragment(UserFragment())
                     true
                 }
                 R.id.nav_barang -> {
-                    startActivity(Intent(this, KelolaBarangActivity::class.java))
+                    replaceFragment(BarangFragment())
                     true
                 }
                 R.id.nav_laporan -> {
-                    startActivity(Intent(this, LaporanActivity::class.java))
+                    replaceFragment(LaporanFragment())
                     true
                 }
                 else -> false
@@ -74,10 +80,9 @@ class DashboardActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupSpinner() {
-        val options = arrayOf("Harian", "Mingguan", "Bulanan")
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, options)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.spinnerFilter.adapter = adapter
+    private fun replaceFragment(fragment: Fragment) {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, fragment)
+            .commit()
     }
 }
