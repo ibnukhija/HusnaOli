@@ -62,19 +62,9 @@ class TambahUserActivity : AppCompatActivity() {
         }
 
         val db = dbHelper.writableDatabase
-        val values = ContentValues().apply {
-            put("nama", nama)
-            put("username", username)
-            put("password", password)
-            put("role", role.lowercase())
-        }
-
-        val result = db.insert("user", null, values)
-        if (result != -1L) {
-            Toast.makeText(this, "User berhasil disimpan!", Toast.LENGTH_SHORT).show()
-            finish() // Kembali ke halaman Kelola User
-        } else {
-            Toast.makeText(this, "Gagal menyimpan user!", Toast.LENGTH_SHORT).show()
-        }
+        val sql = "INSERT INTO user (nama, username, password, role) VALUES (?, ?, ?, ?)"
+        db.execSQL(sql, arrayOf(nama, username, password, role.lowercase()))
+        Toast.makeText(this, "User berhasil disimpan!", Toast.LENGTH_SHORT).show()
+        finish()
     }
 }

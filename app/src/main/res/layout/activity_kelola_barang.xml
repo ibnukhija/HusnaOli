@@ -8,7 +8,6 @@
     android:background="#F9FAFB"
     tools:context=".KelolaBarangActivity">
 
-    <!-- ================= TOOLBAR ================= -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
@@ -90,7 +89,6 @@
             android:orientation="vertical"
             android:padding="12dp">
 
-            <!-- ===== HEADER LIST ===== -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -164,7 +162,6 @@
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <!-- ===== TABLE HEADER ===== -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -184,7 +181,6 @@
 
             </LinearLayout>
 
-            <!-- ===== LIST ===== -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_sparepart"
                 android:layout_width="match_parent"
@@ -194,18 +190,4 @@
 
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
-
-    <!-- ================= FOOTER ================= -->
-    <TextView
-        android:id="@+id/footer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="© 2026 Husna Oli Kediri."
-        android:textSize="9sp"
-        android:textColor="@color/grey_text"
-        android:gravity="center"
-        android:padding="8dp"
-        android:background="@color/header_dark"
-        app:layout_constraintBottom_toBottomOf="parent"/>
-
 </androidx.constraintlayout.widget.ConstraintLayout>
