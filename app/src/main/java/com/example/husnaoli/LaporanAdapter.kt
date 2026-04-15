@@ -7,13 +7,8 @@ import android.widget.BaseAdapter
 import com.example.husnaoli.databinding.ItemLaporanBinding
 
 class LaporanAdapter(
-<<<<<<< Updated upstream
-    private var list: List<Any>,
-    private val jenis: Int   // 0 = Masuk, 1 = Keluar
-=======
     private val list: List<Any>,
     private val jenis: Int
->>>>>>> Stashed changes
 ) : BaseAdapter() {
 
     override fun getCount(): Int = list.size
@@ -21,28 +16,6 @@ class LaporanAdapter(
     override fun getItemId(position: Int) = position.toLong()
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
-<<<<<<< Updated upstream
-        val binding = ItemLaporanBinding.inflate(LayoutInflater.from(parent?.context), parent, false)
-        val item = list[position]
-
-        if (jenis == 0) { // Barang Masuk
-            val data = item as LaporanMasuk
-            binding.tvTanggal.text = data.tanggal
-            binding.tvKasirSupplier.text = data.supplier
-            binding.tvDetail.text = data.detail
-            binding.tvTotal.text = "Rp ${String.format("%,.0f", data.totalModal)}"
-            binding.tvTotal.setTextColor(0xFFDC3545.toInt()) // Merah
-        } else { // Penjualan
-            val data = item as LaporanKeluar
-            binding.tvTanggal.text = data.tanggal
-            binding.tvKasirSupplier.text = data.kasir
-            binding.tvDetail.text = data.detail
-            binding.tvTotal.text = "Rp ${String.format("%,.0f", data.totalHarga)}"
-            binding.tvTotal.setTextColor(0xFF28A745.toInt()) // Hijau
-        }
-
-        return binding.root
-=======
         val binding: ItemLaporanBinding
         val view: View
 
@@ -72,6 +45,5 @@ class LaporanAdapter(
         }
 
         return view
->>>>>>> Stashed changes
     }
 }
