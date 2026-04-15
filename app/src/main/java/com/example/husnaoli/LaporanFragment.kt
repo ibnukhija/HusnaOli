@@ -17,6 +17,7 @@ class LaporanFragment : Fragment() {
     private val binding get() = _binding!!
     private lateinit var dbHelper: DBHusnaOli
 
+<<<<<<< Updated upstream
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -30,10 +31,24 @@ class LaporanFragment : Fragment() {
         setupButtons()
 
         return binding.root
+=======
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        _binding = FragmentLaporanBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        dbHelper = DBHusnaOli(requireContext())
+        setupDatePicker()
+        setupSpinner()
+        setupButtons()
+>>>>>>> Stashed changes
     }
 
     private fun setupDatePicker() {
         val calendar = Calendar.getInstance()
+<<<<<<< Updated upstream
 
         binding.etStartDate.setOnClickListener {
             DatePickerDialog(requireContext(), { _, year, month, day ->
@@ -44,6 +59,16 @@ class LaporanFragment : Fragment() {
         binding.etEndDate.setOnClickListener {
             DatePickerDialog(requireContext(), { _, year, month, day ->
                 binding.etEndDate.setText(String.format("%04d-%02d-%02d", year, month + 1, day))
+=======
+        binding.etStartDate.setOnClickListener {
+            DatePickerDialog(requireContext(), { _, y, m, d ->
+                binding.etStartDate.setText(String.format("%04d-%02d-%02d", y, m + 1, d))
+            }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show()
+        }
+        binding.etEndDate.setOnClickListener {
+            DatePickerDialog(requireContext(), { _, y, m, d ->
+                binding.etEndDate.setText(String.format("%04d-%02d-%02d", y, m + 1, d))
+>>>>>>> Stashed changes
             }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show()
         }
     }
@@ -62,6 +87,7 @@ class LaporanFragment : Fragment() {
             val jenis = binding.spinnerJenis.selectedItemPosition
 
             if (start.isEmpty() || end.isEmpty()) {
+<<<<<<< Updated upstream
                 Toast.makeText(requireContext(), "Pilih tanggal dulu", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
@@ -92,4 +118,23 @@ class LaporanFragment : Fragment() {
         super.onDestroyView()
         _binding = null
     }
+=======
+                Toast.makeText(requireContext(), "Pilih tanggal", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val data = if (jenis == 0) dbHelper.getLaporanMasuk(start, end) else dbHelper.getLaporanKeluar(start, end)
+            binding.lvLaporan.adapter = LaporanAdapter(data, jenis)
+
+            val total = if (jenis == 0) {
+                data.filterIsInstance<LaporanMasuk>().sumOf { it.totalModal }
+            } else {
+                data.filterIsInstance<LaporanKeluar>().sumOf { it.totalHarga }
+            }
+            binding.tvGrandTotal.text = "Rp ${String.format("%,.0f", total.toDouble())}"
+        }
+    }
+
+    override fun onDestroyView() { super.onDestroyView(); _binding = null }
+>>>>>>> Stashed changes
 }
