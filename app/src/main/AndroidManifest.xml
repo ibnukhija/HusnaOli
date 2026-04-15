@@ -12,6 +12,15 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.HusnaOli">
         <activity
+            android:name=".LaporanAdapter"
+            android:exported="false" />
+        <activity
+            android:name=".LaporanActivity"
+            android:exported="false" />
+        <activity
+            android:name=".DashboardKasirActivity"
+            android:exported="false" />
+        <activity
             android:name=".DashboardKasirActivity"
             android:exported="false" />
         <activity
@@ -55,9 +64,6 @@
             android:exported="false" />
         <activity
             android:name=".InputStokBaruActivity"
-            android:exported="false" />
-        <activity
-            android:name=".DashboardKasirActivity"
             android:exported="false" />
     </application>
 

@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#F9FAFB"
+    android:padding="16dp">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@android:drawable/ic_menu_revert"
+            android:background="?attr/selectableItemBackgroundBorderless" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="📄 LAPORAN BENGKEL"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="#212529"
+            android:gravity="center" />
+    </LinearLayout>
+
+    <!-- Card Filter -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="4dp"
+        app:strokeColor="#FF5E00"
+        app:strokeWidth="2dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <EditText
+                    android:id="@+id/etStartDate"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="48dp"
+                    android:hint="Tanggal Mulai"
+                    android:inputType="date"
+                    android:focusable="false"
+                    android:clickable="true"
+                    android:background="@drawable/bg_edittext"
+                    android:paddingHorizontal="12dp"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=" s/d "
+                    android:textSize="16sp"
+                    android:layout_marginHorizontal="8dp" />
+
+                <EditText
+                    android:id="@+id/etEndDate"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="48dp"
+                    android:hint="Tanggal Akhir"
+                    android:inputType="date"
+                    android:focusable="false"
+                    android:clickable="true"
+                    android:background="@drawable/bg_edittext"
+                    android:paddingHorizontal="12dp"
+                    android:textSize="14sp" />
+
+            </LinearLayout>
+
+            <Spinner
+                android:id="@+id/spinnerJenis"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="12dp" />
+
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <Button
+        android:id="@+id/btnTampilkan"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:text="TAMPILKAN LAPORAN"
+        android:backgroundTint="#FF5E00"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:layout_marginTop="16dp"/>
+
+    <!-- List -->
+    <ListView
+        android:id="@+id/lvLaporan"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:divider="#EEEEEE"
+        android:dividerHeight="12dp"
+        android:layout_marginTop="16dp"/>
+
+    <!-- Total -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="4dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="TOTAL"
+                android:textSize="18sp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/tvGrandTotal"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="Rp 0"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#28A745"
+                android:gravity="end"/>
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <Button
+        android:id="@+id/btnCetak"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:text="🖨 CETAK LAPORAN"
+        android:backgroundTint="#1C1C1C"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:layout_marginTop="12dp"/>
+</LinearLayout>

@@ -199,69 +199,123 @@
                 </com.google.android.material.card.MaterialCardView>
             </LinearLayout>
 
-<!--            <LinearLayout-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:layout_marginTop="16dp"-->
-<!--                android:orientation="horizontal">-->
+            <!-- Card Menu Utama -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="horizontal"
+                android:baselineAligned="false">
 
-<!--                <com.google.android.material.card.MaterialCardView-->
-<!--                    android:id="@+id/card_kelola_user"-->
-<!--                    android:layout_width="0dp"-->
-<!--                    android:layout_height="120dp"-->
-<!--                    android:layout_marginEnd="8dp"-->
-<!--                    android:layout_weight="1"-->
-<!--                    app:cardCornerRadius="8dp"-->
-<!--                    app:strokeColor="@color/navy_button"-->
-<!--                    app:strokeWidth="2dp">-->
-<!--                    <LinearLayout-->
-<!--                        android:layout_width="match_parent"-->
-<!--                        android:layout_height="match_parent"-->
-<!--                        android:gravity="center"-->
-<!--                        android:orientation="vertical">-->
-<!--                        <ImageView android:layout_width="32dp" android:layout_height="32dp" android:src="@android:drawable/ic_menu_myplaces" app:tint="@color/navy_button" />-->
-<!--                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="KELOLA\nUSER" android:textColor="@color/navy_button" android:textSize="12sp" android:textStyle="bold" />-->
-<!--                    </LinearLayout>-->
-<!--                </com.google.android.material.card.MaterialCardView>-->
+                <!-- Card Kelola User -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_kelola_user"
+                    android:layout_width="0dp"
+                    android:layout_height="120dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_weight="1"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="4dp"
+                    app:strokeColor="@color/navy_button"
+                    app:strokeWidth="2dp">
 
-<!--                <com.google.android.material.card.MaterialCardView-->
-<!--                    android:id="@+id/card_kelola_barang"-->
-<!--                    android:layout_width="0dp"-->
-<!--                    android:layout_height="120dp"-->
-<!--                    android:layout_marginHorizontal="4dp"-->
-<!--                    android:layout_weight="1"-->
-<!--                    app:cardCornerRadius="8dp"-->
-<!--                    app:strokeColor="@color/navy_button"-->
-<!--                    app:strokeWidth="2dp">-->
-<!--                    <LinearLayout-->
-<!--                        android:layout_width="match_parent"-->
-<!--                        android:layout_height="match_parent"-->
-<!--                        android:gravity="center"-->
-<!--                        android:orientation="vertical">-->
-<!--                        <ImageView android:layout_width="32dp" android:layout_height="32dp" android:src="@android:drawable/ic_menu_manage" app:tint="@color/navy_button" />-->
-<!--                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="KELOLA\nBARANG" android:textColor="@color/navy_button" android:textSize="12sp" android:textStyle="bold" />-->
-<!--                    </LinearLayout>-->
-<!--                </com.google.android.material.card.MaterialCardView>-->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:orientation="vertical">
 
-<!--                <com.google.android.material.card.MaterialCardView-->
-<!--                    android:id="@+id/card_laporan"-->
-<!--                    android:layout_width="0dp"-->
-<!--                    android:layout_height="120dp"-->
-<!--                    android:layout_marginStart="8dp"-->
-<!--                    android:layout_weight="1"-->
-<!--                    app:cardCornerRadius="8dp"-->
-<!--                    app:strokeColor="#4B5563"-->
-<!--                    app:strokeWidth="2dp">-->
-<!--                    <LinearLayout-->
-<!--                        android:layout_width="match_parent"-->
-<!--                        android:layout_height="match_parent"-->
-<!--                        android:gravity="center"-->
-<!--                        android:orientation="vertical">-->
-<!--                        <ImageView android:layout_width="32dp" android:layout_height="32dp" android:src="@android:drawable/ic_menu_report_image" app:tint="#4B5563" />-->
-<!--                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="LAPORAN\n" android:textColor="#4B5563" android:textSize="12sp" android:textStyle="bold" />-->
-<!--                    </LinearLayout>-->
-<!--                </com.google.android.material.card.MaterialCardView>-->
-<!--            </LinearLayout>-->
+                        <ImageView
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:src="@android:drawable/ic_menu_myplaces"
+                            app:tint="@color/navy_button" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="KELOLA\nUSER"
+                            android:textColor="@color/navy_button"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:gravity="center" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Card Kelola Barang -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_kelola_barang"
+                    android:layout_width="0dp"
+                    android:layout_height="120dp"
+                    android:layout_marginHorizontal="4dp"
+                    android:layout_weight="1"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="4dp"
+                    app:strokeColor="@color/navy_button"
+                    app:strokeWidth="2dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <ImageView
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:src="@android:drawable/ic_menu_manage"
+                            app:tint="@color/navy_button" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="KELOLA\nBARANG"
+                            android:textColor="@color/navy_button"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:gravity="center" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Card Laporan -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/card_laporan"
+                    android:layout_width="0dp"
+                    android:layout_height="120dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="4dp"
+                    app:strokeColor="#FF5E00"
+                    app:strokeWidth="2dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <ImageView
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:src="@android:drawable/ic_menu_report_image"
+                            app:tint="#FF5E00" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="LAPORAN"
+                            android:textColor="#FF5E00"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:gravity="center" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"

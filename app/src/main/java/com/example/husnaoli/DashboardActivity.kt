@@ -3,11 +3,11 @@ package com.example.husnaoli
 import android.content.Intent
 import android.os.Bundle
 import android.widget.ArrayAdapter
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.husnaoli.databinding.ActivityDashboardBinding
 
 class DashboardActivity : AppCompatActivity() {
+
     private lateinit var binding: ActivityDashboardBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -15,7 +15,7 @@ class DashboardActivity : AppCompatActivity() {
         binding = ActivityDashboardBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Menampilkan Nama User dan Role
+        // Mengambil data user dari SharedPreferences (sesuai versi teman kamu)
         val sharedPref = getSharedPreferences("UserSession", MODE_PRIVATE)
         val namaUser = sharedPref.getString("USER_NAMA", "User")
         val roleUser = sharedPref.getString("USER_ROLE", "Guest")
@@ -25,7 +25,7 @@ class DashboardActivity : AppCompatActivity() {
         setupSpinner()
         setupBottomNavigation()
 
-        //Tombol Logout
+        // Tombol Logout
         binding.btnLogout.setOnClickListener {
             val sharedPref = getSharedPreferences("UserSession", MODE_PRIVATE)
             sharedPref.edit().clear().apply()
@@ -34,6 +34,21 @@ class DashboardActivity : AppCompatActivity() {
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
             finish()
+        }
+
+        // Card Kelola User
+        binding.cardKelolaUser.setOnClickListener {
+            startActivity(Intent(this, KelolaUserActivity::class.java))
+        }
+
+        // Card Kelola Barang
+        binding.cardKelolaBarang.setOnClickListener {
+            startActivity(Intent(this, KelolaBarangActivity::class.java))
+        }
+
+        // Card Laporan
+        binding.cardLaporan.setOnClickListener {
+            startActivity(Intent(this, LaporanActivity::class.java))
         }
     }
 
@@ -50,9 +65,8 @@ class DashboardActivity : AppCompatActivity() {
                     startActivity(Intent(this, KelolaBarangActivity::class.java))
                     true
                 }
-
                 R.id.nav_laporan -> {
-                    Toast.makeText(this, "Laporan segera hadir", Toast.LENGTH_SHORT).show()
+                    startActivity(Intent(this, LaporanActivity::class.java))
                     true
                 }
                 else -> false
