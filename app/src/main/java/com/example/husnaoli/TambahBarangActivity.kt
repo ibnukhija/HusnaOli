@@ -16,8 +16,8 @@ class TambahBarangActivity : AppCompatActivity() {
     private lateinit var binding: ActivityTambahBarangBinding
     private lateinit var dbHelper: DBHusnaOli
     private var selectedImageUri: Uri? = null
-    
-    // List untuk menyimpan ID kategori agar sinkron dengan spinner
+
+    // Daftar ID kategori dari spinner
     private val kategoriIds = mutableListOf<Int>()
 
     // Register launcher untuk mengambil gambar dari galeri
@@ -135,7 +135,6 @@ class TambahBarangActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        // Menutup helper saat activity dihancurkan adalah cara yang benar
         dbHelper.close()
     }
 

@@ -22,11 +22,11 @@
         </activity>
 
         <activity android:name=".DashboardActivity" android:exported="false" />
+        <activity android:name=".DashboardKasirActivity" android:exported="false" />
         <activity android:name=".TambahUserActivity" android:exported="false" />
         <activity android:name=".TambahBarangActivity" android:exported="false" />
         <activity android:name=".EditBarangActivity" android:exported="false" />
         <activity android:name=".RiwayatRestockActivity" android:exported="false" />
-        <activity android:name=".DashboardKasirActivity" android:exported="false" />
 
     </application>
 </manifest>

@@ -2,6 +2,7 @@ package com.example.husnaoli
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.example.husnaoli.databinding.ActivityDashboardBinding
@@ -15,20 +16,27 @@ class DashboardActivity : AppCompatActivity() {
         binding = ActivityDashboardBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // Tampilkan Nama User dan Role di Header
         val sharedPref = getSharedPreferences("UserSession", MODE_PRIVATE)
         val namaUser = sharedPref.getString("USER_NAMA", "User")
         val roleUser = sharedPref.getString("USER_ROLE", "Guest")
         binding.tvUserGreeting.text = "Halo, $namaUser ($roleUser)"
 
-        if (savedInstanceState == null) {
+        // Load Fragment (Cek intent extra jika diarahkan dari Riwayat)
+        val target = intent.getStringExtra("TARGET_FRAGMENT")
+        if (target == "INPUT_STOK") {
+            replaceFragment(InputStokFragment())
+        } else if (savedInstanceState == null) {
             replaceFragment(DashboardFragment())
         }
 
         setupBottomNavigation()
 
+        // Tombol Logout
         binding.btnLogout.setOnClickListener {
             val sharedPrefEdit = getSharedPreferences("UserSession", MODE_PRIVATE).edit()
             sharedPrefEdit.clear().apply()
+
             val intent = Intent(this, login::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
