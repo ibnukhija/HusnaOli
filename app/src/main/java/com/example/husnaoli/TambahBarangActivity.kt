@@ -16,8 +16,11 @@ class TambahBarangActivity : AppCompatActivity() {
     private lateinit var binding: ActivityTambahBarangBinding
     private lateinit var dbHelper: DBHusnaOli
     private var selectedImageUri: Uri? = null
+    
+    // List untuk menyimpan ID kategori agar sinkron dengan spinner
+    private val kategoriIds = mutableListOf<Int>()
 
-    // Register launcher untuk mengambil gambar dari galeri (Sesuai kode awalmu)
+    // Register launcher untuk mengambil gambar dari galeri
     private val getContent = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         if (uri != null) {
             selectedImageUri = uri
@@ -37,6 +40,28 @@ class TambahBarangActivity : AppCompatActivity() {
 
         setupKategoriSpinner()
         setupListeners()
+    }
+
+    private fun setupKategoriSpinner() {
+        val db = dbHelper.readableDatabase
+        val cursor = db.rawQuery("SELECT kategori_id, nama_kategori FROM kategori", null)
+        
+        val categories = mutableListOf<String>()
+        kategoriIds.clear()
+
+        if (cursor.moveToFirst()) {
+            do {
+                val id = cursor.getInt(cursor.getColumnIndexOrThrow("kategori_id"))
+                val name = cursor.getString(cursor.getColumnIndexOrThrow("nama_kategori"))
+                categories.add(name)
+                kategoriIds.add(id)
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, categories)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.spinnerKategori.adapter = adapter
     }
 
     private fun setupListeners() {
@@ -69,27 +94,19 @@ class TambahBarangActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupKategoriSpinner() {
-        val listKategori = arrayOf(
-            "Oli & Pelumas",
-            "Ban & Velg",
-            "Sistem Pengereman",
-            "Mesin & Transmisi",
-            "Kelistrikan",
-            "Aksesoris"
-        )
-
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, listKategori)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.spinnerKategori.adapter = adapter
-    }
-
     private fun simpanBarang() {
-        // Memastikan nama variabel binding sesuai dengan camelCase dari XML
         val namaItem = binding.etNamaItem.text.toString().trim()
         val stokAwal = binding.etStokAwal.text.toString().toIntOrNull() ?: 0
         val hargaBeli = binding.etHargaBeli.text.toString().toIntOrNull() ?: 0
         val hargaJual = binding.etHargaJual.text.toString().toIntOrNull() ?: 0
+
+        // Ambil ID kategori dari spinner
+        val selectedIndex = binding.spinnerKategori.selectedItemPosition
+        if (selectedIndex == -1 || kategoriIds.isEmpty()) {
+            Toast.makeText(this, "Silakan pilih kategori!", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val kategoriId = kategoriIds[selectedIndex]
 
         if (namaItem.isEmpty()) {
             Toast.makeText(this, "Nama item tidak boleh kosong!", Toast.LENGTH_SHORT).show()
@@ -99,11 +116,10 @@ class TambahBarangActivity : AppCompatActivity() {
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
             put("nama_item", namaItem)
-            put("kategori_id", 1) // Default ID 1
+            put("kategori_id", kategoriId)
             put("stok", stokAwal)
             put("harga_beli", hargaBeli)
             put("harga_jual", hargaJual)
-            // Simpan path foto jika ada
             put("foto", selectedImageUri?.toString() ?: "")
         }
 
@@ -115,6 +131,12 @@ class TambahBarangActivity : AppCompatActivity() {
         } else {
             Toast.makeText(this, "Gagal simpan ke tabel items", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Menutup helper saat activity dihancurkan adalah cara yang benar
+        dbHelper.close()
     }
 
     private fun getFileName(uri: Uri): String? {

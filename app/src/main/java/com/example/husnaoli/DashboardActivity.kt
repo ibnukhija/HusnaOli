@@ -15,39 +15,25 @@ class DashboardActivity : AppCompatActivity() {
         binding = ActivityDashboardBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Mengambil data dari Intent
-        val namaUser = intent.getStringExtra("USER_NAMA") ?: "User"
-        val roleUser = intent.getStringExtra("USER_ROLE") ?: "Guest"
+        // Menampilkan Nama User dan Role
+        val sharedPref = getSharedPreferences("UserSession", MODE_PRIVATE)
+        val namaUser = sharedPref.getString("USER_NAMA", "User")
+        val roleUser = sharedPref.getString("USER_ROLE", "Guest")
 
-        // Menampilkan ke TextView
         binding.tvUserGreeting.text = "Halo, $namaUser ($roleUser)"
 
         setupSpinner()
         setupBottomNavigation()
 
-        // Tombol Logout
+        //Tombol Logout
         binding.btnLogout.setOnClickListener {
+            val sharedPref = getSharedPreferences("UserSession", MODE_PRIVATE)
+            sharedPref.edit().clear().apply()
+
             val intent = Intent(this, login::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
             finish()
-        }
-
-        // Pindah ke halaman Kelola User
-        binding.cardKelolaUser.setOnClickListener {
-            val intent = Intent(this, KelolaUserActivity::class.java)
-            startActivity(intent)
-        }
-
-        // --- PERBAIKAN: Pindah ke halaman Kelola Barang ---
-        binding.cardKelolaBarang.setOnClickListener {
-            val intent = Intent(this, KelolaBarangActivity::class.java)
-            startActivity(intent)
-        }
-
-        // Card Laporan (Masih menggunakan Toast karena belum ada halamannya)
-        binding.cardLaporan.setOnClickListener {
-            Toast.makeText(this, "Membuka Laporan", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -60,8 +46,6 @@ class DashboardActivity : AppCompatActivity() {
                     startActivity(Intent(this, KelolaUserActivity::class.java))
                     true
                 }
-
-                // --- PERBAIKAN: Menu Bottom Navigation untuk Kelola Barang ---
                 R.id.nav_barang -> {
                     startActivity(Intent(this, KelolaBarangActivity::class.java))
                     true

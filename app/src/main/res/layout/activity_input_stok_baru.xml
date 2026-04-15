@@ -72,7 +72,6 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@id/footer"
         app:layout_constraintTop_toBottomOf="@id/toolbar">
 
         <com.google.android.material.card.MaterialCardView
@@ -323,17 +322,4 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
     </ScrollView>
-
-    <TextView
-        android:id="@+id/footer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="#1E2226"
-        android:gravity="center"
-        android:padding="8dp"
-        android:text="© 2026 Husna Oli Kediri."
-        android:textColor="#6C757D"
-        android:textSize="9sp"
-        app:layout_constraintBottom_toBottomOf="parent" />
-
 </androidx.constraintlayout.widget.ConstraintLayout>

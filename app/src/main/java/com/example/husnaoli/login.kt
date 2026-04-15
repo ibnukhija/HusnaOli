@@ -32,7 +32,6 @@ class login : AppCompatActivity() {
 
     private fun checkLogin(user: String, pass: String) {
         val db = dbHelper.readableDatabase
-        // Cek username, password, dan ambil role serta nama
         val cursor = db.rawQuery(
             "SELECT role, nama FROM user WHERE username=? AND password=?",
             arrayOf(user, pass)
@@ -41,23 +40,27 @@ class login : AppCompatActivity() {
         if (cursor.moveToFirst()) {
             val role = cursor.getString(0)
             val nama = cursor.getString(1)
+            cursor.close()
 
-            Toast.makeText(this, "Login Berhasil! Halo $nama", Toast.LENGTH_SHORT).show()
+            val sharedPref = getSharedPreferences("UserSession", MODE_PRIVATE)
+            val editor = sharedPref.edit()
+            editor.putString("USER_NAMA", nama)
+            editor.putString("USER_ROLE", role)
+            editor.apply()
 
-            if (role == "admin") {
+            if (role.lowercase() == "admin") {
                 // Jika Admin ke Dashboard Utama
                 val intent = Intent(this, DashboardActivity::class.java)
                 startActivity(intent)
             } else {
-                // Jika Kasir ke Dashboard Kasir yang baru kita buat
+                // Jika Kasir ke Dashboard Kasir
                 val intent = Intent(this, DashboardKasirActivity::class.java)
-                intent.putExtra("USER_NAMA", nama) // Kirim nama ke Dashboard
                 startActivity(intent)
             }
-            finish() // Tutup activity login supaya gak bisa di-back
+            finish()
         } else {
-            Toast.makeText(this, "Username atau Password salah, Fi!", Toast.LENGTH_LONG).show()
+            cursor.close()
+            Toast.makeText(this, "Username atau Password salah!", Toast.LENGTH_LONG).show()
         }
-        cursor.close()
     }
 }

@@ -64,6 +64,14 @@ class DBHusnaOli(context: Context) :
         val insuser = "INSERT INTO user(nama, username, password, role) VALUES" +
                 "('Husna', 'husna', 'husna123', 'admin')"
 
+        val inskategori = "INSERT INTO kategori(nama_kategori) VALUES" +
+                "('Oli & Pelumas')," +
+                "('Ban & Velg')," +
+                "('Sistem Pengereman')," +
+                "('Mesin & Transmisi')," +
+                "('Kelistrikan')," +
+                "('Aksesoris')"
+
 
         db?.execSQL(tuser)
         db?.execSQL(tkategori)
@@ -73,6 +81,7 @@ class DBHusnaOli(context: Context) :
         db?.execSQL(trestock_items)
         db?.execSQL(tdetail_restock_items)
         db?.execSQL(insuser)
+        db?.execSQL(inskategori)
     }
 
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
