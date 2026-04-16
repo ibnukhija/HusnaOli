@@ -41,7 +41,6 @@ class RiwayatRestockActivity : AppCompatActivity() {
         val list = mutableListOf<Riwayat>()
         val db = dbHelper.readableDatabase
         
-        // Menggunakan nama tabel yang sesuai dengan DBHusnaOli.kt
         val sql = """
             SELECT r.restock_id, r.tanggal_masuk, r.nama_toko, 
             (SELECT GROUP_CONCAT(i.nama_item || ' (x' || d.jumlah || ')') 
@@ -89,9 +88,9 @@ class RiwayatRestockActivity : AppCompatActivity() {
         }
         
         binding.btnInputStok.setOnClickListener {
+            // Karena InputStokFragment sekarang dibuka lewat DashboardActivity
             val intent = Intent(this, DashboardActivity::class.java)
             intent.putExtra("TARGET_FRAGMENT", "INPUT_STOK")
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
         }
     }

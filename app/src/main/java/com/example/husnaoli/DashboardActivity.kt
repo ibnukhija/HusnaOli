@@ -2,6 +2,7 @@ package com.example.husnaoli
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -21,10 +22,8 @@ class DashboardActivity : AppCompatActivity() {
         val roleUser = sharedPref.getString("USER_ROLE", "Guest")
         binding.tvUserGreeting.text = "Halo, $namaUser ($roleUser)"
 
-        // Load Fragment (Cek intent extra jika diarahkan dari Riwayat)
         val target = intent.getStringExtra("TARGET_FRAGMENT")
         if (target == "INPUT_STOK") {
-            // Tampilkan fragment input stok tanpa mengubah selection di navbar
             replaceFragment(InputStokFragment())
         } else if (savedInstanceState == null) {
             replaceFragment(DashboardFragment())
@@ -69,6 +68,15 @@ class DashboardActivity : AppCompatActivity() {
     }
 
     private fun replaceFragment(fragment: Fragment) {
+        // Logika Menyembunyikan Toolbar dan Navbar Utama
+        if (fragment is InputStokFragment) {
+            binding.toolbar.visibility = View.GONE
+            binding.bottomNavigation.visibility = View.GONE
+        } else {
+            binding.toolbar.visibility = View.VISIBLE
+            binding.bottomNavigation.visibility = View.VISIBLE
+        }
+
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, fragment)
             .commit()

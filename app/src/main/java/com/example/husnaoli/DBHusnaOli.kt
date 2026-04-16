@@ -98,6 +98,6 @@ class DBHusnaOli(context: Context) :
 
     companion object{
         val DB_Name = "HusnaOli"
-        val DB_Ver = 2
+        val DB_Ver = 3
     }
 }
