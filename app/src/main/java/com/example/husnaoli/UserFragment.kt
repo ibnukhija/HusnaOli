@@ -2,22 +2,29 @@ package com.example.husnaoli
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.husnaoli.databinding.FragmentUserBinding
 import com.example.husnaoli.databinding.ItemUserBinding
+import com.example.husnaoli.network.LoginResponse
+import com.example.husnaoli.network.RetrofitClient
+import com.example.husnaoli.network.UserResponse
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class UserFragment : Fragment() {
 
     private var _binding: FragmentUserBinding? = null
     private val binding get() = _binding!!
-    private lateinit var dbHelper: DBHusnaOli
     private lateinit var adapter: UserAdapter
 
     override fun onCreateView(
@@ -30,7 +37,6 @@ class UserFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        dbHelper = DBHusnaOli(requireContext())
 
         setupRecyclerView()
         
@@ -46,38 +52,66 @@ class UserFragment : Fragment() {
 
     private fun setupRecyclerView() {
         adapter = UserAdapter(mutableListOf<User>()) { user ->
-            deleteUser(user)
+            showDeleteConfirmation(user)
         }
         binding.rvUser.layoutManager = LinearLayoutManager(requireContext())
         binding.rvUser.adapter = adapter
     }
 
     private fun loadData() {
-        val list = mutableListOf<User>()
-        val db = dbHelper.readableDatabase
-        val cursor = db.rawQuery("SELECT user_id, nama, username, role FROM user", null)
+        RetrofitClient.instance.getUsers().enqueue(object : Callback<UserResponse> {
+            override fun onResponse(call: Call<UserResponse>, response: Response<UserResponse>) {
+                if (_binding == null || !isAdded) return
 
-        if (cursor.moveToFirst()) {
-            do {
-                list.add(User(
-                    cursor.getInt(0),
-                    cursor.getString(1),
-                    cursor.getString(2),
-                    cursor.getString(3)
-                ))
-            } while (cursor.moveToNext())
-        }
-        cursor.close()
-        adapter.updateData(list)
+                if (response.isSuccessful) {
+                    val res = response.body()
+                    if (res != null && res.status == "success") {
+                        val list = res.data.map {
+                            User(it.userId, it.nama, it.username, it.role)
+                        }
+                        adapter.updateData(list)
+                    }
+                } else {
+                    Toast.makeText(requireContext(), "Error Server: ${response.code()}", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            override fun onFailure(call: Call<UserResponse>, t: Throwable) {
+                Log.e("API_ERROR", t.message ?: "Unknown Error")
+                Toast.makeText(requireContext(), "Koneksi Gagal", Toast.LENGTH_SHORT).show()
+            }
+        })
+    }
+
+    private fun showDeleteConfirmation(user: User) {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Hapus User")
+            .setMessage("Apakah Anda yakin ingin menghapus user ${user.nama}?")
+            .setPositiveButton("Hapus") { _, _ ->
+                deleteUser(user)
+            }
+            .setNegativeButton("Batal", null)
+            .show()
     }
 
     private fun deleteUser(user: User) {
-        val db = dbHelper.writableDatabase
-        val result = db.delete("user", "user_id=?", arrayOf(user.id.toString()))
-        if (result > 0) {
-            Toast.makeText(requireContext(), "User ${user.nama} berhasil dihapus", Toast.LENGTH_SHORT).show()
-            loadData()
-        }
+        RetrofitClient.instance.deleteUser(user.id).enqueue(object : Callback<LoginResponse> {
+            override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
+                if (response.isSuccessful) {
+                    val res = response.body()
+                    if (res != null && res.status == "success") {
+                        Toast.makeText(requireContext(), res.message, Toast.LENGTH_SHORT).show()
+                        loadData()
+                    } else {
+                        Toast.makeText(requireContext(), res?.message ?: "Gagal menghapus", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+
+            override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
+                Toast.makeText(requireContext(), "Koneksi Gagal", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
     data class User(
@@ -107,13 +141,19 @@ class UserFragment : Fragment() {
                 tvUsername.text = u.username
                 tvRole.text = u.role.uppercase()
 
-                if (u.role.lowercase() == "admin") {
-                    tvRole.setBackgroundColor(ContextCompat.getColor(root.context, R.color.role_admin_bg))
-                    tvRole.setTextColor(ContextCompat.getColor(root.context, R.color.role_admin_text))
-                } else {
-                    tvRole.setBackgroundColor(ContextCompat.getColor(root.context, R.color.role_kasir_bg))
-                    tvRole.setTextColor(ContextCompat.getColor(root.context, R.color.role_kasir_text))
+                // Pastikan resource color role_admin_bg, dll sudah ada di colors.xml
+                try {
+                    if (u.role.lowercase() == "admin") {
+                        tvRole.setBackgroundColor(ContextCompat.getColor(root.context, R.color.role_admin_bg))
+                        tvRole.setTextColor(ContextCompat.getColor(root.context, R.color.role_admin_text))
+                    } else {
+                        tvRole.setBackgroundColor(ContextCompat.getColor(root.context, R.color.role_kasir_bg))
+                        tvRole.setTextColor(ContextCompat.getColor(root.context, R.color.role_kasir_text))
+                    }
+                } catch (e: Exception) {
+                    // Fallback jika color tidak ditemukan
                 }
+
                 btnDelete.setOnClickListener { onDeleteClick(u) }
             }
         }

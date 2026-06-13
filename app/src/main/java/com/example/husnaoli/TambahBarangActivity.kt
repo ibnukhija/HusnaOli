@@ -1,33 +1,38 @@
 package com.example.husnaoli
 
-import android.content.ContentValues
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.provider.OpenableColumns
+import android.util.Base64
+import android.util.Log
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.example.husnaoli.databinding.ActivityTambahBarangBinding
+import com.example.husnaoli.network.KategoriResponse
+import com.example.husnaoli.network.LoginResponse
+import com.example.husnaoli.network.RetrofitClient
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import java.io.ByteArrayOutputStream
+import java.io.InputStream
 
 class TambahBarangActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityTambahBarangBinding
-    private lateinit var dbHelper: DBHusnaOli
     private var selectedImageUri: Uri? = null
 
-    // Daftar ID kategori dari spinner
     private val kategoriIds = mutableListOf<Int>()
 
-    // Register launcher untuk mengambil gambar dari galeri
     private val getContent = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         if (uri != null) {
             selectedImageUri = uri
-            val fileName = getFileName(uri)
-            binding.tvFileName.text = fileName ?: "Gambar dipilih"
-        } else {
-            binding.tvFileName.text = "No file chosen"
+            binding.tvFileName.text = getFileName(uri) ?: "Gambar dipilih"
         }
     }
 
@@ -36,61 +41,43 @@ class TambahBarangActivity : AppCompatActivity() {
         binding = ActivityTambahBarangBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        dbHelper = DBHusnaOli(this)
-
         setupKategoriSpinner()
         setupListeners()
     }
 
     private fun setupKategoriSpinner() {
-        val db = dbHelper.readableDatabase
-        val cursor = db.rawQuery("SELECT kategori_id, nama_kategori FROM kategori", null)
-        
-        val categories = mutableListOf<String>()
-        kategoriIds.clear()
-
-        if (cursor.moveToFirst()) {
-            do {
-                val id = cursor.getInt(cursor.getColumnIndexOrThrow("kategori_id"))
-                val name = cursor.getString(cursor.getColumnIndexOrThrow("nama_kategori"))
-                categories.add(name)
-                kategoriIds.add(id)
-            } while (cursor.moveToNext())
-        }
-        cursor.close()
-
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, categories)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.spinnerKategori.adapter = adapter
+        RetrofitClient.instance.getKategori().enqueue(object : Callback<KategoriResponse> {
+            override fun onResponse(call: Call<KategoriResponse>, response: Response<KategoriResponse>) {
+                if (response.isSuccessful) {
+                    val res = response.body()
+                    if (res != null && res.status == "success") {
+                        val categories = mutableListOf<String>()
+                        kategoriIds.clear()
+                        res.data.forEach {
+                            categories.add(it.namaKategori)
+                            kategoriIds.add(it.kategoriId)
+                        }
+                        val adapter = ArrayAdapter(this@TambahBarangActivity, android.R.layout.simple_spinner_item, categories)
+                        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                        binding.spinnerKategori.adapter = adapter
+                    }
+                }
+            }
+            override fun onFailure(call: Call<KategoriResponse>, t: Throwable) {
+                Log.e("API_ERROR", t.message ?: "")
+            }
+        })
     }
 
     private fun setupListeners() {
-        // Tombol Kembali di Header
-        binding.btnBackHeader.setOnClickListener {
-            finish()
-        }
-
-        // Tombol Kembali berupa teks
-        binding.btnBack.setOnClickListener {
-            finish()
-        }
-
-        // Tombol Logout
+        binding.btnBackHeader.setOnClickListener { finish() }
+        binding.btnChooseFile.setOnClickListener { getContent.launch("image/*") }
+        binding.btnSimpan.setOnClickListener { simpanBarang() }
         binding.btnLogout.setOnClickListener {
             val intent = Intent(this, login::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
             finish()
-        }
-
-        // Tombol Pilih File Foto
-        binding.btnChooseFile.setOnClickListener {
-            getContent.launch("image/*")
-        }
-
-        // Tombol Simpan Data
-        binding.btnSimpan.setOnClickListener {
-            simpanBarang()
         }
     }
 
@@ -100,42 +87,54 @@ class TambahBarangActivity : AppCompatActivity() {
         val hargaBeli = binding.etHargaBeli.text.toString().toIntOrNull() ?: 0
         val hargaJual = binding.etHargaJual.text.toString().toIntOrNull() ?: 0
 
-        // Ambil ID kategori dari spinner
         val selectedIndex = binding.spinnerKategori.selectedItemPosition
         if (selectedIndex == -1 || kategoriIds.isEmpty()) {
-            Toast.makeText(this, "Silakan pilih kategori!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Pilih kategori!", Toast.LENGTH_SHORT).show()
             return
         }
         val kategoriId = kategoriIds[selectedIndex]
 
         if (namaItem.isEmpty()) {
-            Toast.makeText(this, "Nama item tidak boleh kosong!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Nama tidak boleh kosong!", Toast.LENGTH_SHORT).show()
             return
         }
 
-        val db = dbHelper.writableDatabase
-        val values = ContentValues().apply {
-            put("nama_item", namaItem)
-            put("kategori_id", kategoriId)
-            put("stok", stokAwal)
-            put("harga_beli", hargaBeli)
-            put("harga_jual", hargaJual)
-            put("foto", selectedImageUri?.toString() ?: "")
-        }
+        // Konversi Gambar ke Base64
+        val base64Image = selectedImageUri?.let { uriToBase64(it) } ?: ""
 
-        val result = db.insert("items", null, values)
-
-        if (result != -1L) {
-            Toast.makeText(this, "Barang berhasil ditambahkan", Toast.LENGTH_SHORT).show()
-            finish()
-        } else {
-            Toast.makeText(this, "Gagal simpan ke tabel items", Toast.LENGTH_SHORT).show()
-        }
+        RetrofitClient.instance.tambahBarang(
+            namaItem, kategoriId, hargaBeli, hargaJual, stokAwal, base64Image
+        ).enqueue(object : Callback<LoginResponse> {
+            override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
+                if (response.isSuccessful && response.body()?.status == "success") {
+                    Toast.makeText(this@TambahBarangActivity, "Berhasil!", Toast.LENGTH_SHORT).show()
+                    finish()
+                } else {
+                    Toast.makeText(this@TambahBarangActivity, "Gagal simpan", Toast.LENGTH_SHORT).show()
+                }
+            }
+            override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
+                Toast.makeText(this@TambahBarangActivity, "Koneksi Gagal", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        dbHelper.close()
+    // Fungsi sakti untuk mengubah gambar dari Galeri menjadi Teks (Base64)
+    private fun uriToBase64(uri: Uri): String {
+        return try {
+            val inputStream: InputStream? = contentResolver.openInputStream(uri)
+            val bitmap = BitmapFactory.decodeStream(inputStream)
+            val outputStream = ByteArrayOutputStream()
+            
+            // Kompres gambar agar tidak terlalu berat saat dikirim ke server (Quality: 70%)
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 70, outputStream)
+            
+            val byteArray = outputStream.toByteArray()
+            Base64.encodeToString(byteArray, Base64.DEFAULT)
+        } catch (e: Exception) {
+            Log.e("IMAGE_ERROR", e.message ?: "")
+            ""
+        }
     }
 
     private fun getFileName(uri: Uri): String? {
@@ -145,19 +144,10 @@ class TambahBarangActivity : AppCompatActivity() {
             cursor?.use {
                 if (it.moveToFirst()) {
                     val index = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-                    if (index != -1) {
-                        result = it.getString(index)
-                    }
+                    if (index != -1) result = it.getString(index)
                 }
             }
         }
-        if (result == null) {
-            result = uri.path
-            val cut = result?.lastIndexOf('/')
-            if (cut != null && cut != -1) {
-                result = result?.substring(cut + 1)
-            }
-        }
-        return result
+        return result ?: uri.path?.substringAfterLast('/')
     }
 }

@@ -1,21 +1,26 @@
 package com.example.husnaoli
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.husnaoli.databinding.FragmentDashboardKasirBinding
+import com.example.husnaoli.network.DashboardKasirResponse
+import com.example.husnaoli.network.RetrofitClient
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.text.NumberFormat
-import java.text.SimpleDateFormat
 import java.util.*
 
 class DashboardKasirFragment : Fragment() {
 
     private var _binding: FragmentDashboardKasirBinding? = null
     private val binding get() = _binding!!
-    private lateinit var dbHelper: DBHusnaOli
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -27,53 +32,36 @@ class DashboardKasirFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        dbHelper = DBHusnaOli(requireContext())
         loadSummary()
     }
 
     private fun loadSummary() {
-        val db = dbHelper.readableDatabase
-        val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+        RetrofitClient.instance.getDashboardKasir().enqueue(object : Callback<DashboardKasirResponse> {
+            override fun onResponse(call: Call<DashboardKasirResponse>, response: Response<DashboardKasirResponse>) {
+                if (response.isSuccessful) {
+                    val res = response.body()
+                    if (res != null && res.status == "success") {
+                        binding.tvTotalPendapatan.text = "Rp ${formatRupiah(res.totalPendapatan)}"
+                        binding.tvJumlahTransaksi.text = "${res.jumlahTransaksi} Transaksi Terproses"
 
-        // Hitung Pendapatan Hari Ini
-        val cursor = db.rawQuery(
-            "SELECT SUM(total_harga), COUNT(transaksi_id) " +
-                    "FROM transaksi " +
-                    "WHERE tanggal_transaksi LIKE ?",
-            arrayOf("$today%")
-        )
+                        val listRiwayat = res.riwayat.map {
+                            "Barang: ${it.detail ?: "-"}\nTotal: Rp ${formatRupiah(it.total)} (${it.tanggal})"
+                        }
 
-        if (cursor.moveToFirst()) {
-            val total = cursor.getInt(0)
-            val count = cursor.getInt(1)
+                        if (listRiwayat.isEmpty()) {
+                            binding.lvRiwayatSingkat.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, listOf("Belum ada transaksi hari ini."))
+                        } else {
+                            binding.lvRiwayatSingkat.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, listRiwayat)
+                        }
+                    }
+                }
+            }
 
-            binding.tvTotalPendapatan.text = "Rp ${formatRupiah(total)}"
-            binding.tvJumlahTransaksi.text = "$count Transaksi Terproses"
-        }
-        cursor.close()
-
-        // Load 5 Transaksi Terakhir untuk Riwayat Singkat
-        val listRiwayat = mutableListOf<String>()
-        val cursorRiwayat = db.rawQuery(
-            "SELECT transaksi_id, total_harga, tanggal_transaksi " +
-                    "FROM transaksi " +
-                    "ORDER BY transaksi_id DESC LIMIT 5",
-            null
-        )
-
-        if (cursorRiwayat.moveToFirst()) {
-            do {
-                val id = cursorRiwayat.getInt(0)
-                val total = cursorRiwayat.getInt(1)
-                val tgl = cursorRiwayat.getString(2)
-                listRiwayat.add("ID Transaksi: $id - Rp ${formatRupiah(total)}\n$tgl")
-            } while (cursorRiwayat.moveToNext())
-        } else {
-            listRiwayat.add("Belum ada transaksi hari ini.")
-        }
-        cursorRiwayat.close()
-
-        binding.lvRiwayatSingkat.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, listRiwayat)
+            override fun onFailure(call: Call<DashboardKasirResponse>, t: Throwable) {
+                Log.e("API_ERROR", t.message ?: "")
+                Toast.makeText(requireContext(), "Gagal memuat ringkasan", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
     private fun formatRupiah(number: Int): String {

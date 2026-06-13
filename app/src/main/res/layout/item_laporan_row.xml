@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/tv_col_1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="11/03/2026"
+            android:textSize="10sp"
+            android:textColor="#212529"/>
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="#DEE2E6"
+            android:layout_marginHorizontal="2dp"/>
+
+        <TextView
+            android:id="@+id/tv_col_2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="AHM Pusat"
+            android:textSize="10sp"
+            android:textColor="#212529"/>
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="#DEE2E6"
+            android:layout_marginHorizontal="2dp"/>
+
+        <TextView
+            android:id="@+id/tv_col_3"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2.5"
+            android:text="• Detail Item"
+            android:textSize="10sp"
+            android:textColor="#212529"
+            android:paddingStart="4dp"
+            android:paddingEnd="2dp"/>
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:background="#DEE2E6"
+            android:layout_marginHorizontal="2dp"/>
+
+        <TextView
+            android:id="@+id/tv_col_4"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.5"
+            android:gravity="end"
+            android:text="Rp 0"
+            android:textStyle="bold"
+            android:textSize="11sp"
+            android:textColor="#212529"
+            android:paddingEnd="4dp"/>
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#DEE2E6" />
+</LinearLayout>

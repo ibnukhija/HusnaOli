@@ -1,23 +1,25 @@
 package com.example.husnaoli
 
-import android.content.ContentValues
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.husnaoli.databinding.ActivityTambahUserBinding
+import com.example.husnaoli.network.LoginResponse
+import com.example.husnaoli.network.RetrofitClient
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class TambahUserActivity : AppCompatActivity() {
     private lateinit var binding: ActivityTambahUserBinding
-    private lateinit var dbHelper: DBHusnaOli
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityTambahUserBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        dbHelper = DBHusnaOli(this)
 
         setupHeader()
         setupSpinner()
@@ -35,6 +37,7 @@ class TambahUserActivity : AppCompatActivity() {
             val intent = Intent(this, login::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
+            finish()
         }
     }
 
@@ -61,10 +64,27 @@ class TambahUserActivity : AppCompatActivity() {
             return
         }
 
-        val db = dbHelper.writableDatabase
-        val sql = "INSERT INTO user (nama, username, password, role) VALUES (?, ?, ?, ?)"
-        db.execSQL(sql, arrayOf(nama, username, password, role.lowercase()))
-        Toast.makeText(this, "User berhasil disimpan!", Toast.LENGTH_SHORT).show()
-        finish()
+        // Memanggil API tambah_user.php melalui Retrofit
+        RetrofitClient.instance.tambahUser(nama, username, password, role.lowercase())
+            .enqueue(object : Callback<LoginResponse> {
+                override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
+                    if (response.isSuccessful) {
+                        val res = response.body()
+                        if (res != null && res.status == "success") {
+                            Toast.makeText(this@TambahUserActivity, res.message, Toast.LENGTH_SHORT).show()
+                            finish() // Kembali ke UserFragment
+                        } else {
+                            Toast.makeText(this@TambahUserActivity, res?.message ?: "Gagal simpan", Toast.LENGTH_SHORT).show()
+                        }
+                    } else {
+                        Toast.makeText(this@TambahUserActivity, "Error Server: ${response.code()}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
+                    Log.e("API_ERROR", t.message ?: "Unknown Error")
+                    Toast.makeText(this@TambahUserActivity, "Koneksi Gagal: ${t.message}", Toast.LENGTH_SHORT).show()
+                }
+            })
     }
 }

@@ -2,6 +2,7 @@ package com.example.husnaoli
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,11 +12,16 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.husnaoli.databinding.ActivityRiwayatRestockBinding
 import com.example.husnaoli.databinding.ItemRiwayatRestockBinding
+import com.example.husnaoli.network.LoginResponse
+import com.example.husnaoli.network.RetrofitClient
+import com.example.husnaoli.network.RiwayatResponse
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class RiwayatRestockActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityRiwayatRestockBinding
-    private lateinit var dbHelper: DBHusnaOli
     private lateinit var adapter: RiwayatAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -23,7 +29,6 @@ class RiwayatRestockActivity : AppCompatActivity() {
         binding = ActivityRiwayatRestockBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        dbHelper = DBHusnaOli(this)
         setupRecyclerView()
         setupListeners()
         loadData()
@@ -38,44 +43,38 @@ class RiwayatRestockActivity : AppCompatActivity() {
     }
 
     private fun loadData() {
-        val list = mutableListOf<Riwayat>()
-        val db = dbHelper.readableDatabase
-        
-        val sql = """
-            SELECT r.restock_id, r.tanggal_masuk, r.nama_toko, 
-            (SELECT GROUP_CONCAT(i.nama_item || ' (x' || d.jumlah || ')') 
-             FROM detail_restock_items d 
-             JOIN items i ON d.item_id = i.item_id 
-             WHERE d.restock_id = r.restock_id) as detail,
-            r.keterangan 
-            FROM restock_items r 
-            ORDER BY r.restock_id DESC
-        """.trimIndent()
+        RetrofitClient.instance.getRiwayatRestock().enqueue(object : Callback<RiwayatResponse> {
+            override fun onResponse(call: Call<RiwayatResponse>, response: Response<RiwayatResponse>) {
+                if (response.isSuccessful) {
+                    val res = response.body()
+                    if (res != null && res.status == "success") {
+                        val list = res.data.map {
+                            Riwayat(it.restockId, it.tanggalMasuk, it.namaToko, it.detail, it.keterangan)
+                        }
+                        adapter.updateData(list)
+                    }
+                }
+            }
 
-        val cursor = db.rawQuery(sql, null)
-
-        if (cursor.moveToFirst()) {
-            do {
-                list.add(Riwayat(
-                    cursor.getInt(0),
-                    cursor.getString(1),
-                    cursor.getString(2),
-                    cursor.getString(3) ?: "-",
-                    cursor.getString(4)
-                ))
-            } while (cursor.moveToNext())
-        }
-        cursor.close()
-        adapter.updateData(list)
+            override fun onFailure(call: Call<RiwayatResponse>, t: Throwable) {
+                Toast.makeText(this@RiwayatRestockActivity, "Gagal muat data", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
     private fun hapusRiwayat(id: Int) {
-        val db = dbHelper.writableDatabase
-        val result = db.delete("restock_items", "restock_id=?", arrayOf(id.toString()))
-        if (result > 0) {
-            Toast.makeText(this, "Riwayat dihapus", Toast.LENGTH_SHORT).show()
-            loadData()
-        }
+        RetrofitClient.instance.hapusRiwayatRestock(id).enqueue(object : Callback<LoginResponse> {
+            override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
+                if (response.isSuccessful && response.body()?.status == "success") {
+                    Toast.makeText(this@RiwayatRestockActivity, "Riwayat dihapus", Toast.LENGTH_SHORT).show()
+                    loadData()
+                }
+            }
+
+            override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
+                Toast.makeText(this@RiwayatRestockActivity, "Gagal hapus", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
     private fun setupListeners() {
@@ -86,9 +85,7 @@ class RiwayatRestockActivity : AppCompatActivity() {
             startActivity(intent)
             finish()
         }
-        
         binding.btnInputStok.setOnClickListener {
-            // Karena InputStokFragment sekarang dibuka lewat DashboardActivity
             val intent = Intent(this, DashboardActivity::class.java)
             intent.putExtra("TARGET_FRAGMENT", "INPUT_STOK")
             startActivity(intent)
@@ -101,17 +98,12 @@ class RiwayatRestockActivity : AppCompatActivity() {
     }
 
     data class Riwayat(
-        val id: Int,
-        val tanggal: String,
-        val supplier: String,
-        val detail: String,
-        val keterangan: String?
+        val id: Int, val tanggal: String, val supplier: String,
+        val detail: String, val keterangan: String?
     )
 
-    class RiwayatAdapter(
-        private var list: List<Riwayat>,
-        private val onDelete: (Int) -> Unit
-    ) : RecyclerView.Adapter<RiwayatAdapter.ViewHolder>() {
+    class RiwayatAdapter(private var list: List<Riwayat>, private val onDelete: (Int) -> Unit) :
+        RecyclerView.Adapter<RiwayatAdapter.ViewHolder>() {
 
         class ViewHolder(val binding: ItemRiwayatRestockBinding) : RecyclerView.ViewHolder(binding.root)
 
@@ -132,7 +124,6 @@ class RiwayatRestockActivity : AppCompatActivity() {
         }
 
         override fun getItemCount(): Int = list.size
-
         fun updateData(newList: List<Riwayat>) {
             list = newList
             notifyDataSetChanged()

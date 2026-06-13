@@ -293,11 +293,34 @@
                         android:layout_height="40dp"
                         android:layout_marginTop="4dp"
                         android:layout_marginBottom="12dp"
-                        android:background="@drawable/bg_edittext">
-                        <Spinner
-                            android:id="@+id/spinner_foto"
+                        android:background="@drawable/bg_edittext"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:padding="4dp">
+
+                        <TextView
+                            android:id="@+id/btn_choose_file"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:text="Choose File"
+                            android:gravity="center"
+                            android:paddingHorizontal="8dp"
+                            android:background="#E9ECEF"
+                            android:textColor="#212529"
+                            android:textSize="11sp"
+                            android:clickable="true"
+                            android:focusable="true"/>
+
+                        <TextView
+                            android:id="@+id/tv_file_name"
                             android:layout_width="match_parent"
-                            android:layout_height="match_parent" />
+                            android:layout_height="wrap_content"
+                            android:text="No file chosen"
+                            android:layout_marginStart="8dp"
+                            android:textSize="11sp"
+                            android:textColor="#6C757D"
+                            android:maxLines="1"
+                            android:ellipsize="end"/>
                     </LinearLayout>
 
                     <TextView

@@ -1,18 +1,26 @@
 package com.example.husnaoli
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.husnaoli.databinding.FragmentDashboardBinding
+import com.example.husnaoli.network.DashboardResponse
+import com.example.husnaoli.network.RetrofitClient
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import java.text.NumberFormat
+import java.util.Locale
 
 class DashboardFragment : Fragment() {
 
     private var _binding: FragmentDashboardBinding? = null
     private val binding get() = _binding!!
-    private lateinit var dbHelper: DBHusnaOli
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -24,7 +32,6 @@ class DashboardFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        dbHelper = DBHusnaOli(requireContext())
 
         setupSpinner()
         loadStats()
@@ -38,28 +45,38 @@ class DashboardFragment : Fragment() {
     }
 
     private fun loadStats() {
-        val db = dbHelper.readableDatabase
-        
-        // Total Jenis Barang
-        val cursorBarang = db.rawQuery("SELECT COUNT(*) FROM items", null)
-        if (cursorBarang.moveToFirst()) {
-            binding.tvTotalBarang.text = cursorBarang.getInt(0).toString()
-        }
-        cursorBarang.close()
+        RetrofitClient.instance.getDashboardStats().enqueue(object : Callback<DashboardResponse> {
+            override fun onResponse(call: Call<DashboardResponse>, response: Response<DashboardResponse>) {
+                if (_binding == null || !isAdded) return
 
-        // Stok Tipis (< 5)
-        val cursorStok = db.rawQuery("SELECT COUNT(*) FROM items WHERE stok < 5", null)
-        if (cursorStok.moveToFirst()) {
-            binding.tvStokTipis.text = cursorStok.getInt(0).toString()
-        }
-        cursorStok.close()
+                if (response.isSuccessful) {
+                    val stats = response.body()
+                    if (stats != null && stats.status == "success") {
+                        binding.tvTotalBarang.text = stats.totalBarang.toString()
+                        binding.tvStokTipis.text = stats.stokTipis.toString()
+                        binding.tvOmset.text = formatRupiah(stats.omset)
+                    }
+                }
+            }
 
-        // Total Transaksi
-        val cursorPendapatan = db.rawQuery("SELECT SUM(total_harga) FROM transaksi", null)
-        if (cursorPendapatan.moveToFirst()) {
-            binding.tvOmset.text = "Rp ${cursorPendapatan.getDouble(0)}"
-        }
-        cursorPendapatan.close()
+            override fun onFailure(call: Call<DashboardResponse>, t: Throwable) {
+                if (_binding == null || !isAdded) return
+                Log.e("API_ERROR", t.message ?: "Unknown Error")
+                context?.let {
+                    Toast.makeText(it, "Gagal memuat statistik", Toast.LENGTH_SHORT).show()
+                }
+            }
+        })
+    }
+
+    private fun formatRupiah(number: Double): String {
+        val format = NumberFormat.getCurrencyInstance(Locale("in", "ID"))
+        return format.format(number).replace("Rp", "Rp ")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        loadStats()
     }
 
     override fun onDestroyView() {

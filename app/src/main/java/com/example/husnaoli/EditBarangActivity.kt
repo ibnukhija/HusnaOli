@@ -1,131 +1,162 @@
 package com.example.husnaoli
 
-import android.content.ContentValues
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Bundle
+import android.provider.OpenableColumns
+import android.util.Base64
+import android.util.Log
 import android.widget.ArrayAdapter
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.example.husnaoli.databinding.ActivityEditBarangBinding
+import com.example.husnaoli.network.BarangResponse
+import com.example.husnaoli.network.KategoriResponse
+import com.example.husnaoli.network.LoginResponse
+import com.example.husnaoli.network.RetrofitClient
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import java.io.ByteArrayOutputStream
+import java.io.InputStream
 
 class EditBarangActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityEditBarangBinding
-    private lateinit var dbHelper: DBHusnaOli
     private var sparepartId: Int = -1
     private val kategoriIds = mutableListOf<Int>()
+    private var selectedImageUri: Uri? = null
+    private var currentFotoUrl: String = ""
+
+    private val getContent = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        if (uri != null) {
+            selectedImageUri = uri
+            binding.tvFileName.text = getFileName(uri) ?: "Gambar dipilih"
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityEditBarangBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        dbHelper = DBHusnaOli(this)
-
-        // Ambil ID dari Intent
         sparepartId = intent.getIntExtra("ITEM_ID", -1)
 
         if (sparepartId != -1) {
             setupKategoriSpinner()
-            loadDataLama(sparepartId)
         } else {
-            Toast.makeText(this, "Error: Data barang tidak ditemukan!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Data tidak ditemukan!", Toast.LENGTH_SHORT).show()
             finish()
         }
         setupListeners()
     }
 
-    // Fungsi untuk mengambil data kategori dari database dan mengisi spinner
     private fun setupKategoriSpinner() {
-        val db = dbHelper.readableDatabase
-        val cursor = db.rawQuery("SELECT kategori_id, nama_kategori FROM kategori", null)
-        
-        val categories = mutableListOf<String>()
-        kategoriIds.clear()
-
-        if (cursor.moveToFirst()) {
-            do {
-                val id = cursor.getInt(cursor.getColumnIndexOrThrow("kategori_id"))
-                val name = cursor.getString(cursor.getColumnIndexOrThrow("nama_kategori"))
-                categories.add(name)
-                kategoriIds.add(id)
-            } while (cursor.moveToNext())
-        }
-        cursor.close()
-
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, categories)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.spinnerKategori.adapter = adapter
+        RetrofitClient.instance.getKategori().enqueue(object : Callback<KategoriResponse> {
+            override fun onResponse(call: Call<KategoriResponse>, response: Response<KategoriResponse>) {
+                if (response.isSuccessful && response.body()?.status == "success") {
+                    val categories = mutableListOf<String>()
+                    kategoriIds.clear()
+                    response.body()?.data?.forEach {
+                        categories.add(it.namaKategori)
+                        kategoriIds.add(it.kategoriId)
+                    }
+                    val adapter = ArrayAdapter(this@EditBarangActivity, android.R.layout.simple_spinner_item, categories)
+                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                    binding.spinnerKategori.adapter = adapter
+                    
+                    loadDataLama(sparepartId)
+                }
+            }
+            override fun onFailure(call: Call<KategoriResponse>, t: Throwable) {}
+        })
     }
 
-    // Fungsi untuk mengatur listener
     private fun setupListeners() {
         binding.btnBackHeader.setOnClickListener { finish() }
         binding.btnBack.setOnClickListener { finish() }
-
+        binding.btnChooseFile.setOnClickListener { getContent.launch("image/*") }
+        binding.btnUpdate.setOnClickListener { updateDataBarang() }
         binding.btnLogout.setOnClickListener {
             val intent = Intent(this, login::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
             finish()
         }
-
-        binding.btnUpdate.setOnClickListener {
-            updateDataBarang()
-        }
     }
 
-    // Fungsi untuk mengambil data lama dari database
     private fun loadDataLama(id: Int) {
-        val db = dbHelper.readableDatabase
-        val cursor = db.rawQuery("SELECT * FROM items WHERE item_id = ?", arrayOf(id.toString()))
+        RetrofitClient.instance.getBarangDetail(id).enqueue(object : Callback<BarangResponse> {
+            override fun onResponse(call: Call<BarangResponse>, response: Response<BarangResponse>) {
+                if (response.isSuccessful && response.body()?.data?.isNotEmpty() == true) {
+                    val b = response.body()!!.data[0]
+                    binding.apply {
+                        etNamaItem.setText(b.namaItem)
+                        etStokSaatIni.setText(b.stok.toString())
+                        etHargaBeli.setText(b.hargaBeli.toString())
+                        etHargaJual.setText(b.hargaJual.toString())
+                        currentFotoUrl = b.foto ?: ""
+                        tvFileName.text = if (currentFotoUrl.isNotEmpty()) "Sudah ada foto" else "No file chosen"
 
-        if (cursor.moveToFirst()) {
-            binding.apply {
-                etNamaItem.setText(cursor.getString(cursor.getColumnIndexOrThrow("nama_item")))
-                etStokSaatIni.setText(cursor.getInt(cursor.getColumnIndexOrThrow("stok")).toString())
-                etHargaBeli.setText(cursor.getInt(cursor.getColumnIndexOrThrow("harga_beli")).toString())
-                etHargaJual.setText(cursor.getInt(cursor.getColumnIndexOrThrow("harga_jual")).toString())
-
-                val currentKategoriId = cursor.getInt(cursor.getColumnIndexOrThrow("kategori_id"))
-                val spinnerPosition = kategoriIds.indexOf(currentKategoriId)
-                if (spinnerPosition != -1) {
-                    spinnerKategori.setSelection(spinnerPosition)
+                        val pos = categoriesFindPosition(b.namaKategori)
+                        if (pos != -1) spinnerKategori.setSelection(pos)
+                    }
                 }
             }
-        }
-        cursor.close()
+            override fun onFailure(call: Call<BarangResponse>, t: Throwable) {}
+        })
     }
 
     private fun updateDataBarang() {
-        val namaItem = binding.etNamaItem.text.toString().trim()
-        val stokStr = binding.etStokSaatIni.text.toString().trim()
-        val hargaBeliStr = binding.etHargaBeli.text.toString().trim()
-        val hargaJualStr = binding.etHargaJual.text.toString().trim()
+        val nama = binding.etNamaItem.text.toString().trim()
+        val stok = binding.etStokSaatIni.text.toString().toIntOrNull() ?: 0
+        val beli = binding.etHargaBeli.text.toString().toIntOrNull() ?: 0
+        val jual = binding.etHargaJual.text.toString().toIntOrNull() ?: 0
+        val kategoriId = if (binding.spinnerKategori.selectedItemPosition != -1) kategoriIds[binding.spinnerKategori.selectedItemPosition] else -1
 
-        if (namaItem.isEmpty() || stokStr.isEmpty() || hargaBeliStr.isEmpty() || hargaJualStr.isEmpty()) {
-            Toast.makeText(this, "Semua kolom form harus diisi!", Toast.LENGTH_SHORT).show()
-            return
+        if (nama.isEmpty()) return
+
+        // Jika user pilih foto baru, kirim Base64. Jika tidak, kirim URL lama.
+        val fotoData = selectedImageUri?.let { uriToBase64(it) } ?: currentFotoUrl
+
+        RetrofitClient.instance.editBarang(sparepartId, nama, kategoriId, beli, jual, stok, fotoData)
+            .enqueue(object : Callback<LoginResponse> {
+                override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
+                    if (response.isSuccessful && response.body()?.status == "success") {
+                        Toast.makeText(this@EditBarangActivity, "Update Berhasil", Toast.LENGTH_SHORT).show()
+                        finish()
+                    }
+                }
+                override fun onFailure(call: Call<LoginResponse>, t: Throwable) {}
+            })
+    }
+
+    private fun uriToBase64(uri: Uri): String {
+        return try {
+            val inputStream: InputStream? = contentResolver.openInputStream(uri)
+            val bitmap = BitmapFactory.decodeStream(inputStream)
+            val outputStream = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 70, outputStream)
+            Base64.encodeToString(outputStream.toByteArray(), Base64.DEFAULT)
+        } catch (e: Exception) { "" }
+    }
+
+    private fun categoriesFindPosition(nama: String): Int {
+        for (i in 0 until binding.spinnerKategori.count) {
+            if (binding.spinnerKategori.getItemAtPosition(i).toString() == nama) return i
         }
+        return -1
+    }
 
-        val selectedIndex = binding.spinnerKategori.selectedItemPosition
-        val kategoriId = if (selectedIndex != -1) kategoriIds[selectedIndex] else 1
-
-        val db = dbHelper.writableDatabase
-        val values = ContentValues().apply {
-            put("nama_item", namaItem)
-            put("kategori_id", kategoriId)
-            put("stok", stokStr.toIntOrNull() ?: 0)
-            put("harga_beli", hargaBeliStr.toIntOrNull() ?: 0)
-            put("harga_jual", hargaJualStr.toIntOrNull() ?: 0)
+    private fun getFileName(uri: Uri): String? {
+        var result: String? = null
+        if (uri.scheme == "content") {
+            val cursor = contentResolver.query(uri, null, null, null, null)
+            cursor?.use { if (it.moveToFirst()) result = it.getString(it.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME)) }
         }
-
-        val result = db.update("items", values, "item_id = ?", arrayOf(sparepartId.toString()))
-        if (result > 0) {
-            Toast.makeText(this, "Data berhasil diperbarui", Toast.LENGTH_SHORT).show()
-            finish()
-        } else {
-            Toast.makeText(this, "Gagal memperbarui data", Toast.LENGTH_SHORT).show()
-        }
+        return result ?: uri.path?.substringAfterLast('/')
     }
 }

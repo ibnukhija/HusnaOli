@@ -1,8 +1,8 @@
 package com.example.husnaoli
 
 import android.app.DatePickerDialog
-import android.content.ContentValues
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,13 +11,18 @@ import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.husnaoli.databinding.FragmentInputStokBinding
+import com.example.husnaoli.network.BarangResponse
+import com.example.husnaoli.network.LoginResponse
+import com.example.husnaoli.network.RetrofitClient
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import java.util.Calendar
 
 class InputStokFragment : Fragment() {
 
     private var _binding: FragmentInputStokBinding? = null
     private val binding get() = _binding!!
-    private lateinit var dbHelper: DBHusnaOli
     private var listBarang = mutableListOf<HashMap<String, Any>>()
 
     override fun onCreateView(
@@ -30,40 +35,42 @@ class InputStokFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        dbHelper = DBHusnaOli(requireContext())
 
         setupSpinnerBarang()
         setupListeners()
     }
 
     private fun setupSpinnerBarang() {
-        listBarang.clear()
-        val names = mutableListOf<String>()
-        names.add("-- Pilih Barang --")
+        RetrofitClient.instance.getBarang().enqueue(object : Callback<BarangResponse> {
+            override fun onResponse(call: Call<BarangResponse>, response: Response<BarangResponse>) {
+                if (response.isSuccessful) {
+                    val res = response.body()
+                    if (res != null && res.status == "success") {
+                        listBarang.clear()
+                        val names = mutableListOf<String>()
+                        names.add("-- Pilih Barang --")
 
-        val db = dbHelper.readableDatabase
-        val cursor = db.rawQuery("SELECT item_id, nama_item, harga_beli FROM items", null)
+                        res.data.forEach {
+                            val map = HashMap<String, Any>()
+                            map["id"] = it.itemId
+                            map["nama"] = it.namaItem
+                            map["harga_beli"] = it.hargaBeli
+                            listBarang.add(map)
+                            names.add(it.namaItem)
+                        }
 
-        if (cursor.moveToFirst()) {
-            do {
-                val id = cursor.getInt(0)
-                val nama = cursor.getString(1)
-                val hargaBeli = cursor.getInt(2)
+                        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, names)
+                        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                        binding.spinnerNamaBarang.adapter = adapter
+                    }
+                }
+            }
 
-                val map = HashMap<String, Any>()
-                map["id"] = id
-                map["nama"] = nama
-                map["harga_beli"] = hargaBeli
-                listBarang.add(map)
-
-                names.add(nama)
-            } while (cursor.moveToNext())
-        }
-        cursor.close()
-
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, names)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        binding.spinnerNamaBarang.adapter = adapter
+            override fun onFailure(call: Call<BarangResponse>, t: Throwable) {
+                Log.e("API_ERROR", t.message ?: "Unknown Error")
+                Toast.makeText(requireContext(), "Gagal mengambil data barang", Toast.LENGTH_SHORT).show()
+            }
+        })
 
         // Tampilkan harga beli otomatis saat barang dipilih
         binding.spinnerNamaBarang.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -121,41 +128,34 @@ class InputStokFragment : Fragment() {
         val selectedItem = listBarang[selectedPos - 1]
         val itemId = selectedItem["id"] as Int
         val jumlahMasuk = jumlahMasukStr.toIntOrNull() ?: 0
-        // Gunakan harga dari input (jika diubah) atau harga default barang
         val hargaBeli = hargaBeliStr.toIntOrNull() ?: (selectedItem["harga_beli"] as Int)
 
-        val db = dbHelper.writableDatabase
-        db.beginTransaction()
-
-        try {
-            val valuesRestock = ContentValues().apply {
-                put("tanggal_masuk", tanggal)
-                put("nama_toko", supplier)
-                put("keterangan", keterangan)
-            }
-            val restockId = db.insert("restock_items", null, valuesRestock)
-
-            if (restockId != -1L) {
-                val valuesDetail = ContentValues().apply {
-                    put("restock_id", restockId)
-                    put("item_id", itemId)
-                    put("jumlah", jumlahMasuk)
-                    put("harga_beli_saat_itu", hargaBeli)
+        RetrofitClient.instance.simpanRestock(
+            tanggal,
+            supplier,
+            keterangan,
+            itemId,
+            jumlahMasuk,
+            hargaBeli
+        ).enqueue(object : Callback<LoginResponse> {
+            override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
+                if (response.isSuccessful) {
+                    val res = response.body()
+                    if (res != null && res.status == "success") {
+                        Toast.makeText(requireContext(), res.message, Toast.LENGTH_SHORT).show()
+                        kosongkanForm()
+                    } else {
+                        Toast.makeText(requireContext(), res?.message ?: "Gagal simpan", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    Toast.makeText(requireContext(), "Error Server: ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
-                db.insert("detail_restock_items", null, valuesDetail)
-
-                // Update stok di tabel items
-                db.execSQL("UPDATE items SET stok = stok + $jumlahMasuk WHERE item_id = $itemId")
-
-                db.setTransactionSuccessful()
-                Toast.makeText(requireContext(), "Stok Berhasil Ditambahkan", Toast.LENGTH_SHORT).show()
-                kosongkanForm()
             }
-        } catch (e: Exception) {
-            Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_LONG).show()
-        } finally {
-            db.endTransaction()
-        }
+
+            override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
+                Toast.makeText(requireContext(), "Koneksi Gagal: ${t.message}", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
     private fun kosongkanForm() {
@@ -163,8 +163,8 @@ class InputStokFragment : Fragment() {
         binding.etTanggal.text.clear()
         binding.etKeterangan.text.clear()
         binding.spinnerNamaBarang.setSelection(0)
-        binding.etJumlahMasuk.text.clear()
         binding.etHargaBeli.text.clear()
+        binding.etJumlahMasuk.text.clear()
     }
 
     override fun onDestroyView() {
