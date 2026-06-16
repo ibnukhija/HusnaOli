@@ -59,7 +59,10 @@ interface ApiService {
     fun getDashboardStats(): Call<DashboardResponse>
 
     @GET("get_riwayat_restock.php")
-    fun getRiwayatRestock(): Call<RiwayatResponse>
+    fun getRiwayatRestock(
+        @Query("start_date") startDate: String? = null,
+        @Query("end_date") endDate: String? = null
+    ): Call<RiwayatResponse>
 
     @FormUrlEncoded
     @POST("simpan_restock.php")
@@ -110,7 +113,10 @@ interface ApiService {
     fun getDashboardKasir(): Call<DashboardKasirResponse>
 
     @GET("get_laporan_transaksi.php")
-    fun getLaporanTransaksi(): Call<LaporanResponse>
+    fun getLaporanTransaksi(
+        @Query("start_date") startDate: String? = null,
+        @Query("end_date") endDate: String? = null
+    ): Call<LaporanResponse>
 
     @GET("get_detail_transaksi.php")
     fun getDetailTransaksi(

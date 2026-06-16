@@ -11,6 +11,7 @@
         android:orientation="vertical"
         android:padding="12dp">
 
+        <!-- Baris Statistik (Total Barang, Stok Tipis, Omset) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -24,7 +25,7 @@
                 android:layout_weight="1"
                 app:cardCornerRadius="4dp"
                 app:cardElevation="2dp"
-                app:strokeColor="#DEE2E6"
+                app:strokeColor="#111827"
                 app:strokeWidth="1dp">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -84,7 +85,7 @@
             </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.card.MaterialCardView
-                android:layout_width="0dp"
+                android:layout_width="80dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="4dp"
                 android:layout_weight="1"
@@ -106,6 +107,7 @@
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
 
+        <!-- Card Transaksi Terakhir dengan Judul Kolom -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -115,14 +117,86 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="12dp">
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="8dp" android:text="Transaksi Terakhir" android:textColor="#1E2226" android:textSize="13sp" android:textStyle="bold" />
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="12dp"
+                    android:text="Transaksi Terakhir"
+                    android:textColor="#1E2226"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <!-- TABEL HEADER JUDUL KOLOM -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#E9ECEF"
+                    android:orientation="horizontal"
+                    android:padding="8dp">
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="Tanggal"
+                        android:textSize="9sp"
+                        android:textStyle="bold"
+                        android:textColor="#495057"/>
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="Kasir"
+                        android:textSize="9sp"
+                        android:textStyle="bold"
+                        android:textColor="#495057"/>
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="2.5"
+                        android:gravity="center"
+                        android:text="Barang Terjual"
+                        android:textSize="9sp"
+                        android:textStyle="bold"
+                        android:textColor="#495057"
+                        android:paddingStart="4dp"/>
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1.5"
+                        android:gravity="center"
+                        android:text="Total"
+                        android:textSize="9sp"
+                        android:textStyle="bold"
+                        android:textColor="#495057"/>
+                </LinearLayout>
+
                 <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#DEE2E6" />
-                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:padding="16dp" android:text="Belum ada transaksi" android:textColor="#6C757D" android:textSize="11sp" />
+
+                <ListView
+                    android:id="@+id/lv_transaksi_terakhir"
+                    android:layout_width="match_parent"
+                    android:layout_height="250dp"
+                    android:divider="#F1F3F5"
+                    android:dividerHeight="1dp" />
+
+                <TextView
+                    android:id="@+id/tv_empty_transaksi"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:padding="16dp"
+                    android:text="Belum ada transaksi"
+                    android:visibility="gone"
+                    android:textColor="#6C757D"
+                    android:textSize="11sp" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Grafik Penjualan -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -135,11 +209,28 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:padding="12dp">
-                <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="8dp">
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_centerVertical="true" android:text="Grafik Penjualan" android:textColor="#1E2226" android:textSize="13sp" android:textStyle="bold" />
-                    <Spinner android:id="@+id/spinner_filter" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentEnd="true" />
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:text="Grafik Penjualan"
+                        android:textColor="#1E2226"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+                    <Spinner
+                        android:id="@+id/spinner_filter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true" />
                 </RelativeLayout>
-                <View android:layout_width="match_parent" android:layout_height="120dp" android:background="#F3F4F6" />
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="120dp"
+                    android:background="#F3F4F6" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
     </LinearLayout>

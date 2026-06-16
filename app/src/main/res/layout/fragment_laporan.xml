@@ -34,8 +34,6 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:padding="16dp">
-
-                    <!-- Header yang sudah diperbaiki ukurannya -->
                     <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -64,15 +62,6 @@
                                 android:textSize="16sp"
                                 android:textStyle="bold" />
                         </LinearLayout>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentEnd="true"
-                            android:layout_centerVertical="true"
-                            android:text="Kembali"
-                            android:textColor="#6C757D"
-                            android:textSize="12sp" />
                     </RelativeLayout>
 
                     <!-- Filter Section -->
@@ -162,42 +151,28 @@
                             </LinearLayout>
                         </LinearLayout>
 
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:layout_marginTop="12dp"
-                            android:gravity="start">
+<!--                        <LinearLayout-->
+<!--                            android:layout_width="match_parent"-->
+<!--                            android:layout_height="wrap_content"-->
+<!--                            android:orientation="horizontal"-->
+<!--                            android:layout_marginTop="12dp"-->
+<!--                            android:gravity="start">-->
 
-                            <com.google.android.material.button.MaterialButton
-                                android:id="@+id/btn_filter"
-                                android:layout_width="wrap_content"
-                                android:layout_height="36dp"
-                                android:layout_marginEnd="8dp"
-                                android:backgroundTint="#0D6EFD"
-                                android:text="Filter"
-                                android:textSize="10sp"
-                                app:cornerRadius="4dp"
-                                app:icon="@android:drawable/ic_menu_search"
-                                app:iconSize="12dp"
-                                android:paddingHorizontal="12dp"
-                                android:insetTop="0dp"
-                                android:insetBottom="0dp"/>
-
-                            <com.google.android.material.button.MaterialButton
-                                android:id="@+id/btn_print"
-                                android:layout_width="wrap_content"
-                                android:layout_height="36dp"
-                                android:backgroundTint="#343A40"
-                                android:text="Cetak PDF"
-                                android:textSize="10sp"
-                                app:cornerRadius="4dp"
-                                app:icon="@android:drawable/ic_menu_save"
-                                app:iconSize="12dp"
-                                android:paddingHorizontal="12dp"
-                                android:insetTop="0dp"
-                                android:insetBottom="0dp"/>
-                        </LinearLayout>
+<!--                            <com.google.android.material.button.MaterialButton-->
+<!--                                android:id="@+id/btn_filter"-->
+<!--                                android:layout_width="wrap_content"-->
+<!--                                android:layout_height="36dp"-->
+<!--                                android:layout_marginEnd="8dp"-->
+<!--                                android:backgroundTint="#0D6EFD"-->
+<!--                                android:text="Filter"-->
+<!--                                android:textSize="10sp"-->
+<!--                                app:cornerRadius="4dp"-->
+<!--                                app:icon="@android:drawable/ic_menu_search"-->
+<!--                                app:iconSize="12dp"-->
+<!--                                android:paddingHorizontal="12dp"-->
+<!--                                android:insetTop="0dp"-->
+<!--                                android:insetBottom="0dp"/>-->
+<!--                        </LinearLayout>-->
                     </LinearLayout>
 
                     <!-- Table Area -->
@@ -233,10 +208,42 @@
                         android:orientation="horizontal"
                         android:padding="8dp"
                         android:visibility="gone">
-                        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Tanggal" android:textStyle="bold" android:gravity="center" android:textSize="10sp" android:textColor="#212529"/>
-                        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Kasir" android:textStyle="bold" android:gravity="center" android:textSize="10sp" android:textColor="#212529"/>
-                        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="2.5" android:text="Detail Penjualan" android:textStyle="bold" android:gravity="center" android:textSize="10sp" android:textColor="#212529"/>
-                        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1.5" android:text="Total Omset" android:textStyle="bold" android:gravity="center" android:textSize="10sp" android:textColor="#212529"/>
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Tanggal"
+                            android:textStyle="bold"
+                            android:gravity="center"
+                            android:textSize="10sp"
+                            android:textColor="#212529"/>
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Kasir"
+                            android:textStyle="bold"
+                            android:gravity="center"
+                            android:textSize="10sp"
+                            android:textColor="#212529"/>
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="2.5"
+                            android:text="Detail Penjualan"
+                            android:textStyle="bold"
+                            android:gravity="center"
+                            android:textSize="10sp"
+                            android:textColor="#212529"/>
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1.5"
+                            android:text="Total Omset"
+                            android:textStyle="bold"
+                            android:gravity="center"
+                            android:textSize="10sp"
+                            android:textColor="#212529"/>
                     </LinearLayout>
 
                     <androidx.recyclerview.widget.RecyclerView

@@ -21,7 +21,6 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import java.text.NumberFormat
-import java.text.SimpleDateFormat
 import java.util.*
 
 class LaporanFragment : Fragment() {
@@ -44,7 +43,7 @@ class LaporanFragment : Fragment() {
 
         setupUI()
         setupRecyclerView()
-        loadLaporanMasuk() // Default load
+        loadData() // Initial load
     }
 
     private fun setupUI() {
@@ -61,21 +60,40 @@ class LaporanFragment : Fragment() {
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
-        // Setup Date Pickers
-        binding.etStartDate.setOnClickListener { showDatePicker { date -> binding.etStartDate.setText(date) } }
-        binding.etEndDate.setOnClickListener { showDatePicker { date -> binding.etEndDate.setText(date) } }
+        binding.etStartDate.setOnClickListener { 
+            showDatePicker { date -> 
+                binding.etStartDate.setText(date)
+                loadData() // Otomatis muat data
+            } 
+        }
+        binding.etEndDate.setOnClickListener { 
+            showDatePicker { date -> 
+                binding.etEndDate.setText(date)
+                loadData()
+            } 
+        }
 
-        // Filter Button
-        binding.btnFilter.setOnClickListener {
-            if (binding.spinnerType.selectedItemPosition == 0) {
-                loadLaporanMasuk()
-            } else {
-                loadLaporanKeluar()
-            }
+//        // Filter Button
+//        binding.btnFilter.setOnClickListener {
+//            loadData()
+//        }
+    }
+
+    private fun loadData() {
+        val start = binding.etStartDate.text.toString().takeIf { it.isNotEmpty() }
+        val end = binding.etEndDate.text.toString().takeIf { it.isNotEmpty() }
+        
+        if (binding.spinnerType.selectedItemPosition == 0) {
+            loadLaporanMasuk(start, end)
+        } else {
+            loadLaporanKeluar(start, end)
         }
     }
 
     private fun updateTableHeaders(position: Int) {
+        val start = binding.etStartDate.text.toString().takeIf { it.isNotEmpty() }
+        val end = binding.etEndDate.text.toString().takeIf { it.isNotEmpty() }
+
         if (position == 0) {
             // Barang Masuk
             binding.tvReportLabel.text = "Laporan Restock (Barang Masuk)"
@@ -84,7 +102,7 @@ class LaporanFragment : Fragment() {
             binding.layoutHeaderKeluar.visibility = View.GONE
             binding.tvTotalLabel.text = "TOTAL PENGELUARAN MODAL"
             binding.tvTotalValue.setTextColor(0xFFDC3545.toInt()) // Merah
-            loadLaporanMasuk()
+            loadLaporanMasuk(start, end)
         } else {
             // Barang Keluar
             binding.tvReportLabel.text = "Laporan Penjualan (Barang Keluar)"
@@ -93,7 +111,7 @@ class LaporanFragment : Fragment() {
             binding.layoutHeaderKeluar.visibility = View.VISIBLE
             binding.tvTotalLabel.text = "TOTAL OMSET PENJUALAN"
             binding.tvTotalValue.setTextColor(0xFF198754.toInt()) // Hijau
-            loadLaporanKeluar()
+            loadLaporanKeluar(start, end)
         }
     }
 
@@ -101,7 +119,7 @@ class LaporanFragment : Fragment() {
         DatePickerDialog(
             requireContext(),
             { _, year, month, dayOfMonth ->
-                val date = String.format("%02d/%02d/%d", dayOfMonth, month + 1, year)
+                val date = String.format("%d-%02d-%02d", year, month + 1, dayOfMonth)
                 onDateSelected(date)
             },
             calendar.get(Calendar.YEAR),
@@ -116,8 +134,8 @@ class LaporanFragment : Fragment() {
         binding.rvLaporan.adapter = adapter
     }
 
-    private fun loadLaporanMasuk() {
-        RetrofitClient.instance.getRiwayatRestock().enqueue(object : Callback<RiwayatResponse> {
+    private fun loadLaporanMasuk(startDate: String? = null, endDate: String? = null) {
+        RetrofitClient.instance.getRiwayatRestock(startDate, endDate).enqueue(object : Callback<RiwayatResponse> {
             override fun onResponse(call: Call<RiwayatResponse>, response: Response<RiwayatResponse>) {
                 if (_binding == null || !isAdded) return
                 if (response.isSuccessful && response.body()?.status == "success") {
@@ -139,8 +157,8 @@ class LaporanFragment : Fragment() {
         })
     }
 
-    private fun loadLaporanKeluar() {
-        RetrofitClient.instance.getLaporanTransaksi().enqueue(object : Callback<LaporanResponse> {
+    private fun loadLaporanKeluar(startDate: String? = null, endDate: String? = null) {
+        RetrofitClient.instance.getLaporanTransaksi(startDate, endDate).enqueue(object : Callback<LaporanResponse> {
             override fun onResponse(call: Call<LaporanResponse>, response: Response<LaporanResponse>) {
                 if (_binding == null || !isAdded) return
                 if (response.isSuccessful && response.body()?.status == "success") {
@@ -159,9 +177,8 @@ class LaporanFragment : Fragment() {
             }
             override fun onFailure(call: Call<LaporanResponse>, t: Throwable) {
                 if (_binding == null || !isAdded) return
-                // Log error ke Logcat untuk memudahkan pengecekan
                 Log.e("LaporanFragment", "Error: ${t.message}")
-                Toast.makeText(requireContext(), "Gagal memuat data: ${t.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Gagal memuat data", Toast.LENGTH_SHORT).show()
             }
         })
     }

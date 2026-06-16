@@ -24,8 +24,6 @@ class TambahUserActivity : AppCompatActivity() {
         setupHeader()
         setupSpinner()
 
-        binding.tvKembali.setOnClickListener { finish() }
-
         binding.btnSimpanUser.setOnClickListener {
             saveUser()
         }
