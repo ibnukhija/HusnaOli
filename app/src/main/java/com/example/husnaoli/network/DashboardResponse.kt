@@ -7,7 +7,9 @@ data class DashboardResponse(
     @SerializedName("total_barang") val totalBarang: Int,
     @SerializedName("stok_tipis") val stokTipis: Int,
     @SerializedName("omset") val omset: Double,
-    @SerializedName("transaksi_terakhir") val transaksiTerakhir: List<TransaksiTerakhir>?
+    @SerializedName("transaksi_terakhir") val transaksiTerakhir: List<TransaksiTerakhir>?,
+    @SerializedName("chart_penjualan") val chartPenjualan: ChartData?,
+    @SerializedName("top_items") val topItems: List<TopItem>?
 )
 
 data class TransaksiTerakhir(
@@ -16,4 +18,14 @@ data class TransaksiTerakhir(
     @SerializedName("total") val total: Double,
     @SerializedName("detail") val detail: String?,
     @SerializedName("kasir") val kasir: String?
+)
+
+data class ChartData(
+    @SerializedName("labels") val labels: List<String>,
+    @SerializedName("data") val data: List<Double>
+)
+
+data class TopItem(
+    @SerializedName("nama_item") val namaItem: String,
+    @SerializedName("total_terjual") val totalSold: Int
 )

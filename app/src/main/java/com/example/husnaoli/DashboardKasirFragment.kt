@@ -38,6 +38,9 @@ class DashboardKasirFragment : Fragment() {
     private fun loadSummary() {
         RetrofitClient.instance.getDashboardKasir().enqueue(object : Callback<DashboardKasirResponse> {
             override fun onResponse(call: Call<DashboardKasirResponse>, response: Response<DashboardKasirResponse>) {
+                // PERBAIKAN UTAMA: Tambahkan proteksi ganda sebelum mengakses binding & konteks
+                if (_binding == null || !isAdded) return
+
                 if (response.isSuccessful) {
                     val res = response.body()
                     if (res != null && res.status == "success") {
@@ -58,6 +61,7 @@ class DashboardKasirFragment : Fragment() {
             }
 
             override fun onFailure(call: Call<DashboardKasirResponse>, t: Throwable) {
+                if (_binding == null || !isAdded) return
                 Log.e("API_ERROR", t.message ?: "")
                 Toast.makeText(requireContext(), "Gagal memuat ringkasan", Toast.LENGTH_SHORT).show()
             }
@@ -65,7 +69,7 @@ class DashboardKasirFragment : Fragment() {
     }
 
     private fun formatRupiah(number: Int): String {
-        return NumberFormat.getNumberInstance(Locale("in", "ID")).format(number)
+        return NumberFormat.getNumberInstance(Locale("id", "ID")).format(number)
     }
 
     override fun onResume() {

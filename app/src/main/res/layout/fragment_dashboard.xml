@@ -179,7 +179,7 @@
                 <ListView
                     android:id="@+id/lv_transaksi_terakhir"
                     android:layout_width="match_parent"
-                    android:layout_height="250dp"
+                    android:layout_height="180dp"
                     android:divider="#F1F3F5"
                     android:dividerHeight="1dp" />
 
@@ -196,12 +196,11 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Grafik Penjualan -->
+        <!-- Grafik Penjualan (LineChart) -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp"
             app:cardCornerRadius="8dp"
             app:cardElevation="1dp">
             <LinearLayout
@@ -227,11 +226,42 @@
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true" />
                 </RelativeLayout>
-                <View
+
+                <com.github.mikephil.charting.charts.LineChart
+                    android:id="@+id/line_chart_penjualan"
                     android:layout_width="match_parent"
-                    android:layout_height="120dp"
-                    android:background="#F3F4F6" />
+                    android:layout_height="250dp" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
+
+        <!-- Top 5 Barang Terlaris (BarChart) -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="1dp">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="12dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:text="Top 5 Barang Terlaris"
+                    android:textColor="#1E2226"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <com.github.mikephil.charting.charts.BarChart
+                    android:id="@+id/bar_chart_terlaris"
+                    android:layout_width="match_parent"
+                    android:layout_height="250dp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
     </LinearLayout>
 </ScrollView>

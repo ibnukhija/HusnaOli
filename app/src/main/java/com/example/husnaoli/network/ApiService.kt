@@ -56,7 +56,7 @@ interface ApiService {
     ): Call<LoginResponse>
 
     @GET("get_dashboard_stats.php")
-    fun getDashboardStats(): Call<DashboardResponse>
+    fun getDashboardStats(@Query("filter") filter: String): Call<DashboardResponse>
 
     @GET("get_riwayat_restock.php")
     fun getRiwayatRestock(
