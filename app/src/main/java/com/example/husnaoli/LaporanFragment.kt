@@ -41,8 +41,8 @@ class LaporanFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setupUI()
         setupRecyclerView()
+        setupUI()
         loadData() // Initial load
     }
 
@@ -60,29 +60,24 @@ class LaporanFragment : Fragment() {
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
-        binding.etStartDate.setOnClickListener { 
-            showDatePicker { date -> 
+        binding.etStartDate.setOnClickListener {
+            showDatePicker { date ->
                 binding.etStartDate.setText(date)
-                loadData() // Otomatis muat data
-            } 
+                loadData() // Otomatis muat data saat tanggal diubah
+            }
         }
-        binding.etEndDate.setOnClickListener { 
-            showDatePicker { date -> 
+        binding.etEndDate.setOnClickListener {
+            showDatePicker { date ->
                 binding.etEndDate.setText(date)
-                loadData()
-            } 
+                loadData() // Otomatis muat data saat tanggal diubah
+            }
         }
-
-//        // Filter Button
-//        binding.btnFilter.setOnClickListener {
-//            loadData()
-//        }
     }
 
     private fun loadData() {
         val start = binding.etStartDate.text.toString().takeIf { it.isNotEmpty() }
         val end = binding.etEndDate.text.toString().takeIf { it.isNotEmpty() }
-        
+
         if (binding.spinnerType.selectedItemPosition == 0) {
             loadLaporanMasuk(start, end)
         } else {
@@ -138,21 +133,37 @@ class LaporanFragment : Fragment() {
         RetrofitClient.instance.getRiwayatRestock(startDate, endDate).enqueue(object : Callback<RiwayatResponse> {
             override fun onResponse(call: Call<RiwayatResponse>, response: Response<RiwayatResponse>) {
                 if (_binding == null || !isAdded) return
+
                 if (response.isSuccessful && response.body()?.status == "success") {
                     val data = response.body()?.data ?: listOf()
-                    val rows = data.map {
-                        val rowTotal = if (it.total != null && it.total > 0) it.total 
-                                       else (it.hargaBeli ?: 0) * (it.jumlah ?: 0)
-                        
-                        ReportRow(it.tanggalMasuk, it.namaToko, it.detail, rowTotal)
+
+                    if (data.isEmpty()) {
+                        // PERBAIKAN: Jika respon sukses tapi data kosong, bersihkan list sisa barang keluar
+                        adapter.clear()
+                        binding.tvTotalValue.text = "Rp 0"
+                    } else {
+                        val rows = data.map {
+                            val rowTotal = if (it.total != null && it.total > 0) it.total
+                            else (it.hargaBeli ?: 0) * (it.jumlah ?: 0)
+
+                            ReportRow(it.tanggalMasuk ?: "-", it.namaToko ?: "-", it.detail ?: "-", rowTotal)
+                        }
+                        adapter.updateData(rows)
+                        calculateTotal(rows)
                     }
-                    adapter.updateData(rows)
-                    calculateTotal(rows)
+                } else {
+                    // PERBAIKAN: Jika server merespon gagal, bersihkan tampilan
+                    adapter.clear()
+                    binding.tvTotalValue.text = "Rp 0"
+                    Toast.makeText(requireContext(), "Belum ada data barang masuk", Toast.LENGTH_SHORT).show()
                 }
             }
             override fun onFailure(call: Call<RiwayatResponse>, t: Throwable) {
                 if (_binding == null || !isAdded) return
-                Toast.makeText(requireContext(), "Gagal memuat data", Toast.LENGTH_SHORT).show()
+                // PERBAIKAN: Jika koneksi gagal, kosongkan daftar lawas agar tidak membingungkan kasir
+                adapter.clear()
+                binding.tvTotalValue.text = "Rp 0"
+                Toast.makeText(requireContext(), "Gagal memuat data barang masuk", Toast.LENGTH_SHORT).show()
             }
         })
     }
@@ -161,24 +172,38 @@ class LaporanFragment : Fragment() {
         RetrofitClient.instance.getLaporanTransaksi(startDate, endDate).enqueue(object : Callback<LaporanResponse> {
             override fun onResponse(call: Call<LaporanResponse>, response: Response<LaporanResponse>) {
                 if (_binding == null || !isAdded) return
+
                 if (response.isSuccessful && response.body()?.status == "success") {
                     val data = response.body()?.data ?: listOf()
-                    val rows = data.map {
-                        ReportRow(
-                            it.tanggal ?: "-",
-                            it.kasir ?: "Anonim",
-                            it.detail ?: "-",
-                            it.total ?: 0
-                        )
+
+                    if (data.isEmpty()) {
+                        // PERBAIKAN: Jika data kosong, bersihkan list sisa barang masuk
+                        adapter.clear()
+                        binding.tvTotalValue.text = "Rp 0"
+                    } else {
+                        val rows = data.map {
+                            ReportRow(
+                                it.tanggal ?: "-",
+                                it.kasir ?: "Anonim",
+                                it.detail ?: "-",
+                                it.total ?: 0
+                            )
+                        }
+                        adapter.updateData(rows)
+                        calculateTotal(rows)
                     }
-                    adapter.updateData(rows)
-                    calculateTotal(rows)
+                } else {
+                    adapter.clear()
+                    binding.tvTotalValue.text = "Rp 0"
+                    Toast.makeText(requireContext(), "Belum ada data barang keluar", Toast.LENGTH_SHORT).show()
                 }
             }
             override fun onFailure(call: Call<LaporanResponse>, t: Throwable) {
                 if (_binding == null || !isAdded) return
+                adapter.clear()
+                binding.tvTotalValue.text = "Rp 0"
                 Log.e("LaporanFragment", "Error: ${t.message}")
-                Toast.makeText(requireContext(), "Gagal memuat data", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Gagal memuat data barang keluar", Toast.LENGTH_SHORT).show()
             }
         })
     }
@@ -189,7 +214,7 @@ class LaporanFragment : Fragment() {
     }
 
     private fun formatRupiah(number: Int): String {
-        return "Rp " + NumberFormat.getNumberInstance(Locale("in", "ID")).format(number)
+        return "Rp " + NumberFormat.getNumberInstance(Locale("id", "ID")).format(number)
     }
 
     data class ReportRow(
@@ -215,7 +240,7 @@ class LaporanFragment : Fragment() {
                 tvCol1.text = item.col1
                 tvCol2.text = item.col2
                 tvCol3.text = item.col3
-                tvCol4.text = "Rp " + NumberFormat.getNumberInstance(Locale("in", "ID")).format(item.value)
+                tvCol4.text = "Rp " + NumberFormat.getNumberInstance(Locale("id", "ID")).format(item.value)
             }
         }
 

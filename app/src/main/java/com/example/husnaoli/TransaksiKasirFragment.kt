@@ -9,6 +9,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.TextView
 import android.widget.Toast
@@ -17,6 +18,7 @@ import androidx.fragment.app.Fragment
 import com.example.husnaoli.databinding.DialogStrukBinding
 import com.example.husnaoli.databinding.FragmentTransaksiKasirBinding
 import com.example.husnaoli.network.BarangResponse
+import com.example.husnaoli.network.BarangItem
 import com.example.husnaoli.network.LoginResponse
 import com.example.husnaoli.network.RetrofitClient
 import com.google.gson.Gson
@@ -34,6 +36,9 @@ class TransaksiKasirFragment : Fragment() {
     private val binding get() = _binding!!
     private val listKeranjang = mutableListOf<HashMap<String, Any>>()
     private var totalBayar: Int = 0
+
+    // Menyimpan data master barang yang didapat dari API
+    private var masterBarangList = listOf<BarangItem>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -58,24 +63,10 @@ class TransaksiKasirFragment : Fragment() {
                 if (response.isSuccessful) {
                     val res = response.body()
                     if (res != null && res.status == "success") {
-                        val listBarangTampil = mutableListOf<String>()
-                        val dataBarangRaw = res.data
+                        masterBarangList = res.data ?: emptyList()
 
-                        dataBarangRaw.forEach {
-                            listBarangTampil.add("${it.namaItem}\nRp${formatRupiah(it.hargaJual)}\nStok: ${it.stok}")
-                        }
-
-                        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, listBarangTampil)
-                        binding.gvBarangKasir.adapter = adapter
-
-                        binding.gvBarangKasir.setOnItemClickListener { _, _, position, _ ->
-                            val item = dataBarangRaw[position]
-                            if (item.stok > 0) {
-                                tambahKeKeranjang(item.itemId, item.namaItem, item.hargaJual)
-                            } else {
-                                Toast.makeText(requireContext(), "Stok habis!", Toast.LENGTH_SHORT).show()
-                            }
-                        }
+                        // Jalankan trigger filter awal untuk menampilkan semua barang
+                        logikaFilterKategori(binding.spinnerKategoriKasir.selectedItemPosition)
                     }
                 }
             }
@@ -86,8 +77,39 @@ class TransaksiKasirFragment : Fragment() {
         })
     }
 
+    // Memasukkan daftar barang hasil filter ke dalam GridView Kasir
+    private fun tampilkanBarangKeGrid(listBarang: List<BarangItem>) {
+        val adapter = object : ArrayAdapter<BarangItem>(requireContext(), R.layout.item_barang_kasir, listBarang) {
+            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+                val view = convertView ?: LayoutInflater.from(context).inflate(R.layout.item_barang_kasir, parent, false)
+
+                val item = getItem(position)
+                if (item != null) {
+                    val tvNama = view.findViewById<TextView>(R.id.text_nama_barang)
+                    val tvHarga = view.findViewById<TextView>(R.id.text_harga_barang)
+                    val tvStok = view.findViewById<TextView>(R.id.text_stok_barang)
+
+                    tvNama.text = item.namaItem
+                    tvHarga.text = "Rp ${formatRupiah(item.hargaJual)}"
+                    tvStok.text = "Stok: ${item.stok}"
+                }
+                return view
+            }
+        }
+
+        binding.gvBarangKasir.adapter = adapter
+
+        binding.gvBarangKasir.setOnItemClickListener { _, _, position, _ ->
+            val item = listBarang[position]
+            if (item.stok > 0) {
+                tambahKeKeranjang(item.itemId, item.namaItem, item.hargaJual)
+            } else {
+                Toast.makeText(requireContext(), "Stok habis!", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
     private fun tambahKeKeranjang(id: Int, nama: String, harga: Int) {
-        // Jika ID = 0 (Jasa), buat antrean baris baru secara independen di list keranjang
         val index = if (id == 0) -1 else listKeranjang.indexOfFirst { it["id"] == id }
 
         if (index != -1) {
@@ -111,7 +133,7 @@ class TransaksiKasirFragment : Fragment() {
         val displayList = listKeranjang.map {
             val sub = it["subtotal"] as Int
             totalBayar += sub
-            "${it["nama"]} (x${it["qty"]}) - Rp${formatRupiah(sub)}"
+            "${it["nama"]} (x${it["qty"]}) - Rp ${formatRupiah(sub)}"
         }
 
         binding.lvKeranjang.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, displayList)
@@ -131,6 +153,7 @@ class TransaksiKasirFragment : Fragment() {
         val itemsToSync = listKeranjang.map {
             mapOf(
                 "id" to it["id"],
+                "nama" to it["nama"], // Ditambahkan parameter nama agar backend PHP tahu nama layanan jasanya
                 "qty" to it["qty"],
                 "price" to it["price"]
             )
@@ -146,7 +169,6 @@ class TransaksiKasirFragment : Fragment() {
             override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
                 if (_binding == null || !isAdded) return
                 if (response.isSuccessful && response.body()?.status == "success") {
-                    // Tampilkan dialog nota penagihan sebelum list dibersihkan
                     showStrukDialog(uangBayar)
 
                     listKeranjang.clear()
@@ -235,10 +257,30 @@ class TransaksiKasirFragment : Fragment() {
     }
 
     private fun setupKategoriSpinner() {
-        val categories = arrayOf("Semua Kategori", "Oli", "Ban", "Suku Cadang")
+        val categories = arrayOf("Semua Kategori", "Oli & Pelumas", "Ban & Velg", "Sistem Pengereman", "Mesin & Transmisi", "Kelistrikan", "Aksesoris")
         val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, categories)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spinnerKategoriKasir.adapter = adapter
+
+        binding.spinnerKategoriKasir.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                logikaFilterKategori(position)
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+    }
+
+    // FUNGSI BARU: Mengisolasi logika filter agar tidak crash saat masterBarangList masih kosong di awal
+    private fun logikaFilterKategori(position: Int) {
+        if (masterBarangList.isEmpty()) return
+
+        if (position == 0) {
+            tampilkanBarangKeGrid(masterBarangList)
+        } else {
+            // Memfilter barang dengan mencocokkan field kategoriId hasil update agent AI Anda
+            val filteredList = masterBarangList.filter { it.kategoriId == position }
+            tampilkanBarangKeGrid(filteredList)
+        }
     }
 
     private fun formatRupiah(number: Int): String {
